@@ -22,7 +22,7 @@ const ScheduleTable = () => {
 
   const navigate = useNavigate();
   const handleScheduleClick = (scheduleId) => {
-    navigate(`/scheduledetails/${scheduleId}`);
+    navigate(`/schuledetails/${scheduleId}`);
   };
 
   const fetchSchedules = async () => {

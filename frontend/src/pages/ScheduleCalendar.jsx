@@ -1,99 +1,200 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { toast } from "react-toastify";
 
-const ScheduleCalendar = () => {
+const ScheduleCalendarWithForm = () => {
+  // Calendar state
   const [events, setEvents] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  // Fetch schedules from backend
+  // Form state
+  const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState({
+    courses: false,
+    teachers: false,
+  });
+  const [formData, setFormData] = useState({
+    id: "",
+    courseId: "",
+    courseName: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    venue: "",
+    duration: "",
+    description: "",
+    teacherId: "",
+    teacherName: "",
+    recipientType: "",
+  });
+
+  // Fetch initial data
   useEffect(() => {
-    fetchSchedules();
+    const fetchData = async () => {
+      try {
+        // Fetch courses
+        setLoading((prev) => ({ ...prev, courses: true }));
+        const coursesResponse = await fetch(
+          "http://localhost:8080/api/admin/allcourses"
+        );
+        const coursesData = await coursesResponse.json();
+        if (coursesResponse.ok) setCourses(coursesData.data);
+
+        // Fetch teachers
+        setLoading((prev) => ({ ...prev, teachers: true }));
+        const teachersResponse = await fetch(
+          "http://localhost:8080/api/admin/getallteachers"
+        );
+        const teachersData = await teachersResponse.json();
+        if (teachersResponse.ok) setTeachers(teachersData.data || []);
+
+        // Fetch schedules
+        const schedulesResponse = await fetch(
+          "http://localhost:8080/api/admin/getallschedule"
+        );
+        const schedulesData = await schedulesResponse.json();
+        if (schedulesResponse.ok) {
+          const formattedEvents = schedulesData.data.map((schedule) => ({
+            id: schedule.id,
+            title: `${schedule.course?.name || "Untitled"} (${schedule.venue})`,
+            start: schedule.startTime,
+            end: schedule.endTime,
+            extendedProps: {
+              ...schedule,
+            },
+          }));
+          setEvents(formattedEvents);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setLoading({ courses: false, teachers: false });
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchSchedules = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:8080/api/admin/getallschedule"
-      );
-      const data = await response.json();
+  // Calendar date click handler
+  const handleDateClick = (arg) => {
+    const dateStr = arg.dateStr;
+    setSelectedDate(dateStr);
+    setFormData({
+      ...formData,
+      date: dateStr,
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    setShowFormModal(true);
+  };
 
-      if (response.ok) {
-        const formattedEvents = data.data.map((schedule) => ({
-          id: schedule.id,
-          title: `${schedule.course?.name || "Untitled"} (${schedule.venue})`,
-          start: schedule.startTime,
-          end: schedule.endTime,
-          extendedProps: {
-            courseName: schedule.course?.name,
-            venue: schedule.venue,
-            description: schedule.description,
-            recipientType: schedule.recipientType,
-          },
-        }));
-        setEvents(formattedEvents);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch schedules");
+  // Calendar event click handler
+  const handleEventClick = (info) => {
+    const event = info.event;
+    setFormData({
+      id: event.id,
+      courseId: event.extendedProps.courseId,
+      courseName: event.extendedProps.course?.name || "",
+      date: event.startStr.split("T")[0],
+      startTime: event.startStr.split("T")[1].substring(0, 5),
+      endTime: event.endStr.split("T")[1].substring(0, 5),
+      venue: event.extendedProps.venue,
+      duration: event.extendedProps.duration?.toString() || "",
+      description: event.extendedProps.description || "",
+      teacherId: event.extendedProps.teacherId,
+      teacherName: event.extendedProps.teacherName || "",
+      recipientType: event.extendedProps.recipientType || "",
+    });
+    setShowFormModal(true);
+  };
+
+  // Form change handler
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "courseName") {
+      const selectedCourse = courses.find((course) => course.name === value);
+      setFormData({
+        ...formData,
+        courseName: value,
+        courseId: selectedCourse ? selectedCourse.id : "",
+      });
+    } else if (name === "teacherName") {
+      const selectedTeacher = teachers.find(
+        (teacher) => `${teacher.firstName} ${teacher.lastName}` === value
+      );
+      setFormData({
+        ...formData,
+        teacherName: value,
+        teacherId: selectedTeacher ? selectedTeacher.id : "",
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
   };
 
-  // Handle clicking on a date (for adding new events)
-  const handleDateClick = (arg) => {
-    setCurrentEvent({
-      start: arg.dateStr,
-      end: arg.dateStr,
-    });
-    setShowModal(true);
-  };
-
-  // Handle clicking on an event (for editing)
-  const handleEventClick = (arg) => {
-    setCurrentEvent({
-      id: arg.event.id,
-      title: arg.event.extendedProps.courseName,
-      start: arg.event.start,
-      end: arg.event.end,
-      ...arg.event.extendedProps,
-    });
-    setShowModal(true);
-  };
-
-  // Handle event updates (drag & drop, resize)
-  const handleEventChange = async (eventChangeInfo) => {
+  // Form submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const response = await fetch(
-        "http://localhost:8080/api/admin/updateschedule",
+        "http://localhost:8080/api/admin/addschedule",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: eventChangeInfo.event.id,
-            date: eventChangeInfo.event.start.toISOString().split("T")[0],
-            startTime: eventChangeInfo.event.start.toISOString(),
-            endTime: eventChangeInfo.event.end?.toISOString(),
-            venue: eventChangeInfo.event.extendedProps.venue,
-            description: eventChangeInfo.event.extendedProps.description,
-            recipientType: eventChangeInfo.event.extendedProps.recipientType,
-          }),
+          body: JSON.stringify(formData),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update schedule");
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        setFormData({
+          courseId: "",
+          courseName: "",
+          date: "",
+          startTime: "",
+          endTime: "",
+          venue: "",
+          duration: "",
+          description: "",
+          teacherId: "",
+          teacherName: "",
+          recipientType: "",
+        });
+        setShowFormModal(false);
+        // Refresh the calendar
+        const schedulesResponse = await fetch(
+          "http://localhost:8080/api/admin/getallschedule"
+        );
+        const schedulesData = await schedulesResponse.json();
+        if (schedulesResponse.ok) {
+          const formattedEvents = schedulesData.data.map((schedule) => ({
+            id: schedule.id,
+            title: `${schedule.course?.name || "Untitled"} (${schedule.venue})`,
+            start: schedule.startTime,
+            end: schedule.endTime,
+            extendedProps: {
+              ...schedule,
+            },
+          }));
+          setEvents(formattedEvents);
+        }
+      } else {
+        toast.error(data.message);
       }
-      toast.success("Schedule updated successfully");
     } catch (error) {
-      toast.error(error.message);
-      eventChangeInfo.revert(); // Revert changes if API fails
+      toast.error("Something went wrong");
+      console.error("Error:", error);
     }
   };
 
-  // Handle deleting an event
+  // Handle event deletion
   const handleDeleteEvent = async () => {
     try {
       const response = await fetch(
@@ -101,276 +202,289 @@ const ScheduleCalendar = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: currentEvent.id }),
+          body: JSON.stringify({ id: formData.id }),
         }
       );
 
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to delete schedule");
-      }
-      toast.success("Schedule deleted successfully");
-      setShowModal(false);
-      fetchSchedules(); // Refresh the calendar
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  // Handle saving new/updated event
-  const handleSaveEvent = async () => {
-    try {
-      const url = currentEvent.id
-        ? "http://localhost:8080/api/admin/updateschedule"
-        : "http://localhost:8080/api/admin/addschedule";
-
-      const method = currentEvent.id ? "POST" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: currentEvent.id,
-          courseName: currentEvent.title,
-          date: new Date(currentEvent.start).toISOString().split("T")[0],
-          startTime: new Date(currentEvent.start).toISOString(),
-          endTime: currentEvent.end
-            ? new Date(currentEvent.end).toISOString()
-            : null,
-          venue: currentEvent.venue,
-          description: currentEvent.description,
-          recipientType: currentEvent.recipientType,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to ${currentEvent.id ? "update" : "add"} schedule`
-        );
+        throw new Error(data.message || "Failed to delete schedule");
       }
 
-      toast.success(
-        `Schedule ${currentEvent.id ? "updated" : "added"} successfully`
+      toast.success(data.message);
+      setShowFormModal(false);
+      // Refresh the calendar
+      const schedulesResponse = await fetch(
+        "http://localhost:8080/api/admin/getallschedule"
       );
-      setShowModal(false);
-      fetchSchedules();
+      const schedulesData = await schedulesResponse.json();
+      if (schedulesResponse.ok) {
+        const formattedEvents = schedulesData.data.map((schedule) => ({
+          id: schedule.id,
+          title: `${schedule.course?.name || "Untitled"} (${schedule.venue})`,
+          start: schedule.startTime,
+          end: schedule.endTime,
+          extendedProps: {
+            ...schedule,
+          },
+        }));
+        setEvents(formattedEvents);
+      }
     } catch (error) {
       toast.error(error.message);
     }
   };
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        Schedule Calendar
-      </h2>
+    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            Schedule Calendar
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Manage and view your teaching schedules
+          </p>
 
-      <div className="fc-custom">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="timeGridWeek"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
-          }}
-          events={events}
-          editable={true}
-          selectable={true}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          eventDrop={handleEventChange}
-          eventResize={handleEventChange}
-          height="auto"
-          nowIndicator={true}
-          eventContent={(eventInfo) => (
-            <div className="fc-event-content">
-              <div className="font-medium">{eventInfo.event.title}</div>
-              <div className="text-xs">
-                {eventInfo.timeText} • {eventInfo.event.extendedProps.venue}
-              </div>
-            </div>
-          )}
-        />
+          {/* Calendar Component */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="timeGridWeek"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay",
+              }}
+              events={events}
+              editable={true}
+              selectable={true}
+              dateClick={handleDateClick}
+              eventClick={handleEventClick}
+              height={700}
+              eventContent={(eventInfo) => (
+                <div className="fc-event-content p-2">
+                  <div className="font-semibold text-sm text-white">
+                    {eventInfo.event.title.split(" (")[0]}
+                  </div>
+                  <div className="text-xs text-white opacity-90">
+                    {eventInfo.timeText} • {eventInfo.event.extendedProps.venue}
+                  </div>
+                </div>
+              )}
+              eventClassNames="border-none bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md"
+              dayHeaderClassNames="bg-gray-50 text-gray-700 font-medium"
+              buttonText={{
+                today: "Today",
+                month: "Month",
+                week: "Week",
+                day: "Day",
+              }}
+              nowIndicatorClassNames="bg-red-500 h-1"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Modal for Add/Edit */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-20 backdrop-blur-lg z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4">
-              {currentEvent?.id ? "Edit Schedule" : "Add Schedule"}
-            </h3>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Course Name
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={currentEvent?.title || ""}
-                onChange={(e) =>
-                  setCurrentEvent({ ...currentEvent, title: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
+      {/* Schedule Form Modal */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 hover:scale-100">
+            <div className="sticky top-0 bg-white z-10 p-6 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {formData.id ? "Edit Schedule" : "Create New Schedule"}
+              </h2>
+              <button
+                onClick={() => setShowFormModal(false)}
+                className="p-1 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+              ></button>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                name="date"
-                value={
-                  currentEvent?.start
-                    ? new Date(currentEvent.start).toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setCurrentEvent({ ...currentEvent, start: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-5">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Course
+                    </label>
+                    <select
+                      name="courseName"
+                      value={formData.courseName}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                      disabled={loading.courses}
+                    >
+                      <option value="">Select a course</option>
+                      {courses.map((course) => (
+                        <option key={course.id} value={course.name}>
+                          {course.name}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="hidden"
+                      name="courseId"
+                      value={formData.courseId}
+                    />
+                  </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Time
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Teacher
+                    </label>
+                    <select
+                      name="teacherName"
+                      value={formData.teacherName}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                      disabled={loading.teachers}
+                    >
+                      <option value="">Select a teacher</option>
+                      {teachers.map((teacher) => (
+                        <option
+                          key={teacher.id}
+                          value={`${teacher.firstName} ${teacher.lastName}`}
+                        >
+                          {teacher.firstName} {teacher.lastName}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="hidden"
+                      name="teacherId"
+                      value={formData.teacherId}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      name="startTime"
+                      value={formData.startTime}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-5">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Recipient Type
+                    </label>
+                    <select
+                      name="recipientType"
+                      value={formData.recipientType}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    >
+                      <option value="">Select recipient type</option>
+                      <option value="students">Students</option>
+                      <option value="teachers">Teachers</option>
+                      <option value="all">All</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Venue
+                    </label>
+                    <input
+                      type="text"
+                      name="venue"
+                      value={formData.venue}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Duration (minutes)
+                    </label>
+                    <input
+                      type="number"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      name="endTime"
+                      value={formData.endTime}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Full Width Fields */}
+              <div className="mt-6 space-y-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
                 </label>
-                <input
-                  type="time"
-                  name="startTime"
-                  value={
-                    currentEvent?.start
-                      ? new Date(currentEvent.start)
-                          .toISOString()
-                          .split("T")[1]
-                          .substring(0, 5)
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const date = currentEvent.start.split("T")[0];
-                    setCurrentEvent({
-                      ...currentEvent,
-                      start: `${date}T${e.target.value}:00Z`,
-                    });
-                  }}
-                  className="w-full px-3 py-2 border rounded"
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  name="endTime"
-                  value={
-                    currentEvent?.end
-                      ? new Date(currentEvent.end)
-                          .toISOString()
-                          .split("T")[1]
-                          .substring(0, 5)
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const date = currentEvent.start.split("T")[0];
-                    setCurrentEvent({
-                      ...currentEvent,
-                      end: `${date}T${e.target.value}:00Z`,
-                    });
-                  }}
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Venue
-              </label>
-              <input
-                type="text"
-                name="venue"
-                value={currentEvent?.venue || ""}
-                onChange={(e) =>
-                  setCurrentEvent({ ...currentEvent, venue: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recipient Type
-              </label>
-              <select
-                name="recipientType"
-                value={currentEvent?.recipientType || ""}
-                onChange={(e) =>
-                  setCurrentEvent({
-                    ...currentEvent,
-                    recipientType: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border rounded"
-                required
-              >
-                <option value="">Select</option>
-                <option value="students">Students</option>
-                <option value="teachers">Teachers</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={currentEvent?.description || ""}
-                onChange={(e) =>
-                  setCurrentEvent({
-                    ...currentEvent,
-                    description: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border rounded"
-                rows="3"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2">
-              {currentEvent?.id && (
+              {/* Submit and Delete Buttons */}
+              <div className="mt-8 flex justify-end space-x-4">
+                {formData.id && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteEvent}
+                    className="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-md hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105"
+                  >
+                    Delete Schedule
+                  </button>
+                )}
                 <button
-                  onClick={handleDeleteEvent}
-                  className="px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600 transition"
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105"
                 >
-                  Delete
+                  {formData.id ? "Update Schedule" : "Create Schedule"}
                 </button>
-              )}
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-200 rounded hover:bg-gray-300 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveEvent}
-                className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600 transition"
-              >
-                Save
-              </button>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -378,4 +492,4 @@ const ScheduleCalendar = () => {
   );
 };
 
-export default ScheduleCalendar;
+export default ScheduleCalendarWithForm;
