@@ -5,6 +5,7 @@ import { GiTeacher } from "react-icons/gi";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { FaChevronDown } from "react-icons/fa";
 import { FiBook } from "react-icons/fi";
+import { IoNotificationsSharp } from "react-icons/io5";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -103,6 +104,15 @@ const Sidebar = () => {
             >
               <FiBook className="mr-3 text-xl" />
               <span className="text-lg">Course</span>
+            </Link>
+          </li>
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+            <Link
+              to="/notificationtable"
+              className="flex items-center p-3 hover:text-white"
+            >
+              <IoNotificationsSharp className="mr-3 text-xl" />
+              <span className="text-lg">Notification</span>
             </Link>
           </li>
         </ul>

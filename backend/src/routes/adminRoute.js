@@ -77,7 +77,7 @@ router.post("/updatenotification", updateNotification);
 router.post("/deleteNotification", deleteNotification);
 
 router.get("/getallNotification", getNotifications);
-router.get("/getallNotification/:id", getSingleNotification);
+router.post("/getnotification", getSingleNotification);
 
 //Route For Course Authentication and Course Management
 router.post("/addcourse", addCourse);

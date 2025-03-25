@@ -24,6 +24,8 @@ import AssignScheduleForm from "./pages/Teacherassign";
 import Singleschdulepage from "./pages/Singleschdulepage";
 import CoursesTable from "./components/Coursetable";
 import CourseProfilePage from "./pages/CourseProfilePage";
+import NotificationsTable from "./components/NotificationsTable";
+import NotificationProfilePage from "./pages/NotificationProfilePage";
 
 const App = () => {
   return (
@@ -54,6 +56,7 @@ const MainContent = () => {
           <Route path="/teachertable" element={<TeachersTable />} />
           <Route path="/scheuletable" element={<ScheduleTable />} />
           <Route path="/coursetable" element={<CoursesTable />} />
+          <Route path="/notificationtable" element={<NotificationsTable />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/resendotp" element={<ResendOTPForm />} />
@@ -63,6 +66,10 @@ const MainContent = () => {
           <Route path="/teacherprofile/:id" element={<Teacherprofile />} />
           <Route path="/schuledetails/:id" element={<Singleschdulepage />} />
           <Route path="/coursedetails/:id" element={<CourseProfilePage />} />
+          <Route
+            path="/notificationdetails/:id"
+            element={<NotificationProfilePage />}
+          />
           <Route path="/addschecule" element={<AddScheduleForm />} />
           <Route path="/assignschecule" element={<AssignScheduleForm />} />
         </Routes>
