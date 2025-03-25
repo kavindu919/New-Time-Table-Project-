@@ -1,3 +1,5 @@
+import ScheduleCalendar from "../pages/ScheduleCalendar";
+
 const Dashboard = () => {
   return (
     <div className="p-6 space-y-6">
@@ -13,6 +15,11 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
           <h3 className="text-lg font-semibold">New Registrations</h3>
           <p className="text-3xl font-bold">30</p>
+        </div>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <div className="h-[500px]">
+          <ScheduleCalendar />
         </div>
       </div>
     </div>
