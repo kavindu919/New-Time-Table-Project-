@@ -32,8 +32,9 @@ import {
 } from "../controllers/Admin/Notifications/notificationConroller.js";
 import getCourse, {
   addCourse,
-  assignTeacher,
+  // assignTeacher,
   deleteCourse,
+  getAllCourses,
 } from "../controllers/Admin/Course/courseController.js";
 import {
   userActivity,
@@ -81,8 +82,9 @@ router.get("/getallNotification/:id", getSingleNotification);
 //Route For Course Authentication and Course Management
 router.post("/addcourse", addCourse);
 router.post("/deletecourse", deleteCourse);
+router.get("/allcourses", getAllCourses);
 router.post("/getcoursedetails/:id", getCourse);
-router.post("/assignteacher", assignTeacher);
+// router.post("/assignteacher", assignTeacher);
 
 //Route For Reports Management
 router.post("/useractivity", userActivity);

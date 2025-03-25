@@ -22,6 +22,7 @@ import AddScheduleForm from "./pages/AddscheduleForm";
 import ScheduleTable from "./components/Scheduletable";
 import AssignScheduleForm from "./pages/Teacherassign";
 import Singleschdulepage from "./pages/Singleschdulepage";
+import CoursesTable from "./components/Coursetable";
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const MainContent = () => {
           <Route path="/usertable" element={<UsersTable />} />
           <Route path="/teachertable" element={<TeachersTable />} />
           <Route path="/scheuletable" element={<ScheduleTable />} />
+          <Route path="/coursetable" element={<CoursesTable />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/resendotp" element={<ResendOTPForm />} />

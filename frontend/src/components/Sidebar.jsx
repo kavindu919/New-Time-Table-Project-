@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { FaTachometerAlt, FaUsers } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
 import { AiOutlineSchedule } from "react-icons/ai";
-import { FaChevronDown } from "react-icons/fa"; // Add the dropdown icon
+import { FaChevronDown } from "react-icons/fa";
+import { FiBook } from "react-icons/fi";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -80,11 +81,7 @@ const Sidebar = () => {
                     <span className="text-lg">All Schedule</span>
                   </Link>
                 </li>
-                <li className="hover:bg-indigo-500 transition-all duration-300 ease-in-out">
-                  <Link to="/assignschecule" className="flex items-center p-2">
-                    <span className="text-lg">Assign Schedule</span>
-                  </Link>
-                </li>
+
                 {/* Additional dropdown items can go here */}
               </ul>
             )}
@@ -96,6 +93,16 @@ const Sidebar = () => {
             >
               <GiTeacher className="mr-3 text-xl" />
               <span className="text-lg">Reports</span>
+            </Link>
+          </li>
+
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+            <Link
+              to="/coursetable"
+              className="flex items-center p-3 hover:text-white"
+            >
+              <FiBook className="mr-3 text-xl" />
+              <span className="text-lg">Course</span>
             </Link>
           </li>
         </ul>

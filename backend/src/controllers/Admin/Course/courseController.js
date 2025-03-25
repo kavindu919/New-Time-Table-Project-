@@ -20,7 +20,9 @@ export const addCourse = async (req, res) => {
       data: courseTeacherEntries,
     });
 
-    return res.status(200).json({ message: "Course added successfully" });
+    return res
+      .status(200)
+      .json({ data: course, message: "Course added successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -46,6 +48,32 @@ export const deleteCourse = async (req, res) => {
   }
 };
 
+export const getAllCourses = async (req, res) => {
+  try {
+    const courses = await prisma.course.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+      orderBy: {
+        name: "asc", // Alphabetical order by course name
+      },
+    });
+
+    return res.status(200).json({
+      message: "Courses retrieved successfully",
+      data: courses,
+    });
+  } catch (error) {
+    console.error("Error in getAllCourses:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve courses",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
 export const getCourse = async (req, res) => {
   const { id } = req.params; // Get course ID from URL params
 
@@ -74,36 +102,36 @@ export const getCourse = async (req, res) => {
   }
 };
 
-export const assignTeacher = async (req, res) => {
-  const { courseId, teacherId } = req.body;
-  try {
-    const courseassignment = await prisma.courseTeacher.findFirst({
-      where: {
-        courseId: courseId,
-        teacherId: teacherId,
-      },
-    });
-    if (courseassignment) {
-      return res
-        .status(404)
-        .json({ message: "Already teacher assigned to the course" });
-    }
-    const newAssignment = await prisma.courseTeacher.create({
-      data: {
-        courseId: courseId,
-        teacherId: teacherId,
-      },
-    });
+// export const assignTeacher = async (req, res) => {
+//   const { courseId, teacherId } = req.body;
+//   try {
+//     const courseassignment = await prisma.courseTeacher.findFirst({
+//       where: {
+//         courseId: courseId,
+//         teacherId: teacherId,
+//       },
+//     });
+//     if (courseassignment) {
+//       return res
+//         .status(404)
+//         .json({ message: "Already teacher assigned to the course" });
+//     }
+//     const newAssignment = await prisma.courseTeacher.create({
+//       data: {
+//         courseId: courseId,
+//         teacherId: teacherId,
+//       },
+//     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Teacher assigned successfully",
-      data: newAssignment,
-    });
-  } catch (error) {
-    console.error("Error fetching course:", error);
-    return res.status(500).json({ message: "Failed to assign teacher" });
-  }
-};
+//     return res.status(201).json({
+//       success: true,
+//       message: "Teacher assigned successfully",
+//       data: newAssignment,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching course:", error);
+//     return res.status(500).json({ message: "Failed to assign teacher" });
+//   }
+// };
 
 export default getCourse;

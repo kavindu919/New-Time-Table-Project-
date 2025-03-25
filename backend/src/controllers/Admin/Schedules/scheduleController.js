@@ -96,8 +96,6 @@ export const addSchedule = async (req, res) => {
 
 export const deleteSchedule = async (req, res) => {
   const { id } = req.body;
-  console.log("Schedule ID:", id); // Log the id to verify its value
-
   try {
     const schedule = await prisma.schedules.findUnique({
       where: { id },
@@ -178,7 +176,7 @@ export const updateSchedule = async (req, res) => {
         startTime: startTime,
         endTime: endTime,
         venue: venue,
-        duration: duration,
+        duration: parseInt(duration),
         description: description,
       },
     });
