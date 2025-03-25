@@ -130,7 +130,6 @@ export const updateSchedule = async (req, res) => {
   try {
     const {
       id,
-
       date,
       startTime,
       endTime,
@@ -145,13 +144,13 @@ export const updateSchedule = async (req, res) => {
     if (!schedule) {
       return res.status(404).json({ message: "Schedule Not Found" });
     }
-    // const startDateTime = new Date(`${date}T${startTime}:00Z`).toISOString();
-    // const endDateTime = new Date(`${date}T${endTime}:00Z`).toISOString();
+    const startDateTime = new Date(`${date}T${startTime}:00Z`).toISOString();
+    const endDateTime = new Date(`${date}T${endTime}:00Z`).toISOString();
 
     const isScheduleChanged =
       schedule.date.toISOString().split("T")[0] !== date ||
-      schedule.startTime.toISOString() !== startTime ||
-      schedule.endTime.toISOString() !== endTime ||
+      schedule.startTime.toISOString() !== startDateTime ||
+      schedule.endTime.toISOString() !== endDateTime ||
       schedule.venue !== venue;
 
     if (isScheduleChanged) {
@@ -160,7 +159,9 @@ export const updateSchedule = async (req, res) => {
           date: new Date(date),
           venue: venue,
           NOT: { id }, // Exclude current schedule
-          AND: [{ startTime: { lt: endTime }, endTime: { gt: startTime } }],
+          AND: [
+            { startTime: { lt: endDateTime }, endTime: { gt: startDateTime } },
+          ],
         },
       });
 
@@ -173,8 +174,8 @@ export const updateSchedule = async (req, res) => {
       where: { id },
       data: {
         date: new Date(date),
-        startTime: startTime,
-        endTime: endTime,
+        startTime: startDateTime,
+        endTime: endDateTime,
         venue: venue,
         duration: parseInt(duration),
         description: description,
