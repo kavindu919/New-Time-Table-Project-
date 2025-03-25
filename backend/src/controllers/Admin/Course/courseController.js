@@ -75,10 +75,9 @@ export const getAllCourses = async (req, res) => {
   }
 };
 export const getCourse = async (req, res) => {
-  const { id } = req.params; // Get course ID from URL params
+  const { id } = req.body;
 
   try {
-    // Fetch only course details without teacher associations
     const course = await prisma.course.findUnique({
       where: { id },
       select: {
@@ -87,14 +86,37 @@ export const getCourse = async (req, res) => {
         description: true,
       },
     });
+    const teachers = await prisma.courseTeacher.findMany({
+      where: {
+        courseId: id,
+      },
+      select: {
+        teacherId: true,
+      },
+    });
+    const teacherIds = teachers.map((t) => t.teacherId);
 
+    const teacherDetails = await prisma.user.findMany({
+      where: {
+        id: { in: teacherIds },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
     return res.status(200).json({
       message: "Course retrieved successfully",
-      data: course, // Returns just {id, name, description}
+      data: {
+        ...course,
+        teachers: teacherDetails,
+      },
     });
   } catch (error) {
     console.error("Error fetching course:", error);

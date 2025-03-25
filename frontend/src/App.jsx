@@ -23,6 +23,7 @@ import ScheduleTable from "./components/Scheduletable";
 import AssignScheduleForm from "./pages/Teacherassign";
 import Singleschdulepage from "./pages/Singleschdulepage";
 import CoursesTable from "./components/Coursetable";
+import CourseProfilePage from "./pages/CourseProfilePage";
 
 const App = () => {
   return (
@@ -61,6 +62,7 @@ const MainContent = () => {
           <Route path="/userprofile/:id" element={<Userprofile />} />
           <Route path="/teacherprofile/:id" element={<Teacherprofile />} />
           <Route path="/schuledetails/:id" element={<Singleschdulepage />} />
+          <Route path="/coursedetails/:id" element={<CourseProfilePage />} />
           <Route path="/addschecule" element={<AddScheduleForm />} />
           <Route path="/assignschecule" element={<AssignScheduleForm />} />
         </Routes>

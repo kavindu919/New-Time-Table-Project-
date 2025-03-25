@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CoursesTable = () => {
   const [courses, setCourses] = useState([]);
@@ -14,6 +15,7 @@ const CoursesTable = () => {
     description: "",
     teacherIds: [],
   });
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -181,7 +183,12 @@ const CoursesTable = () => {
               key={course.id}
               className="border-b hover:bg-gray-50 transition"
             >
-              <td className="px-4 py-3">{course.id}</td>
+              <td
+                className="px-4 py-3 cursor-pointer"
+                onClick={() => navigate(`/coursedetails/${course.id}`)}
+              >
+                {course.id}
+              </td>
               <td className="px-4 py-3 font-medium">{course.name}</td>
               <td className="px-4 py-3 text-gray-600">{course.description}</td>
               <td className="px-4 py-3">

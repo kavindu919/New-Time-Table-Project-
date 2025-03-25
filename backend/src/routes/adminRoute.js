@@ -83,7 +83,7 @@ router.get("/getallNotification/:id", getSingleNotification);
 router.post("/addcourse", addCourse);
 router.post("/deletecourse", deleteCourse);
 router.get("/allcourses", getAllCourses);
-router.post("/getcoursedetails/:id", getCourse);
+router.post("/getcoursedetails", getCourse);
 // router.post("/assignteacher", assignTeacher);
 
 //Route For Reports Management
