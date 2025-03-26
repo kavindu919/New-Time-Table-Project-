@@ -38,6 +38,7 @@ import getCourse, {
   getAllCourses,
 } from "../controllers/Admin/Course/courseController.js";
 import {
+  getAllUserActivities,
   userActivity,
   userActivityReprot,
 } from "../controllers/Admin/Reports/reportController.js";
@@ -95,5 +96,6 @@ router.post("/getcoursedetails", getCourse);
 //Route For Reports Management
 router.post("/useractivity", userActivity);
 router.post("/useractivityreports", userActivityReprot);
+router.get("/allusersactivitys", getAllUserActivities);
 
 export default router;

@@ -6,6 +6,7 @@ import { AiOutlineSchedule } from "react-icons/ai";
 import { FaChevronDown } from "react-icons/fa";
 import { FiBook } from "react-icons/fi";
 import { IoNotificationsSharp } from "react-icons/io5";
+import { LuNewspaper } from "react-icons/lu";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -89,11 +90,11 @@ const Sidebar = () => {
           </li>
           <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
             <Link
-              to="/teachertable"
+              to="/activitytable"
               className="flex items-center p-3 hover:text-white"
             >
-              <GiTeacher className="mr-3 text-xl" />
-              <span className="text-lg">Reports</span>
+              <LuNewspaper className="mr-3 text-xl" />
+              <span className="text-lg">User Activity</span>
             </Link>
           </li>
 
