@@ -83,7 +83,8 @@ export const addSchedule = async (req, res) => {
     });
 
     await createNotification(
-      `New Lesson Assigned Date: ${date} | Time: ${startTime} - ${endTime} | Venue: ${venue}`,
+      "Schedule Added",
+      `Schedule to: Date: ${date} | Time: ${startTime}-${endTime} | Venue: ${venue}`,
       recipientType
     );
 
@@ -183,7 +184,8 @@ export const updateSchedule = async (req, res) => {
     });
 
     await createNotification(
-      `Schedule Update to Date: ${date} | Time: ${startTime} - ${endTime} | Venue: ${venue}`,
+      "Schedule Updated",
+      `Schedule details changed to: Date: ${date} | Time: ${startTime}-${endTime} | Venue: ${venue}`,
       recipientType
     );
 

@@ -16,27 +16,25 @@ const NotificationsTable = () => {
   });
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:8080/api/admin/getallNotification"
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setNotifications(data);
-        } else {
-          throw new Error(data.message || "Failed to fetch notifications");
-        }
-      } catch (error) {
-        setError(error.message);
-        toast.error(error.message);
-      } finally {
-        setLoading(false);
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/admin/getallNotification"
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setNotifications(data);
+      } else {
+        throw new Error(data.message || "Failed to fetch notifications");
       }
-    };
-
+    } catch (error) {
+      setError(error.message);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchNotifications();
   }, []);
 
@@ -80,6 +78,7 @@ const NotificationsTable = () => {
         recipientType: "all",
       });
       setShowAddModal(false);
+      fetchNotifications();
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     }
@@ -230,8 +229,8 @@ const NotificationsTable = () => {
                   className="w-full px-3 py-2 border rounded"
                 >
                   <option value="all">All</option>
-                  <option value="students">Students</option>
-                  <option value="teachers">Teachers</option>
+                  <option value="student">Students</option>
+                  <option value="teacher">Teachers</option>
                 </select>
               </div>
             </div>

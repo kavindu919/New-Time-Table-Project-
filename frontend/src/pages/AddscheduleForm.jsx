@@ -225,8 +225,8 @@ const ScheduleForm = () => {
               required
             >
               <option value="">Select recipient type</option>
-              <option value="students">Students</option>
-              <option value="teachers">Teachers</option>
+              <option value="student">Students</option>
+              <option value="teacher">Teachers</option>
               <option value="all">All</option>
             </select>
           </div>
