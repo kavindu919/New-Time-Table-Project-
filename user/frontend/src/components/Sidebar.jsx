@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaTachometerAlt, FaUsers } from "react-icons/fa";
-import { GiTeacher } from "react-icons/gi";
-import { AiOutlineSchedule } from "react-icons/ai";
-import { FaChevronDown } from "react-icons/fa";
-import { FiBook } from "react-icons/fi";
+import { GrHistory } from "react-icons/gr";
 import { IoNotificationsSharp } from "react-icons/io5";
+import { BiMessageRoundedDetail } from "react-icons/bi";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -38,6 +36,24 @@ const Sidebar = () => {
             >
               <IoNotificationsSharp className="mr-3 text-xl" />
               <span className="text-lg">Notification</span>
+            </Link>
+          </li>
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+            <Link
+              to="/requestschedule"
+              className="flex items-center p-3 hover:text-white"
+            >
+              <BiMessageRoundedDetail className="mr-3 text-xl" />
+              <span className="text-lg">Schedule</span>
+            </Link>
+          </li>
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+            <Link
+              to="/requestshistory"
+              className="flex items-center p-3 hover:text-white"
+            >
+              <GrHistory className="mr-3 text-xl" />
+              <span className="text-lg">Request History</span>
             </Link>
           </li>
         </ul>

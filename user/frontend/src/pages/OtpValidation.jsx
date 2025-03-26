@@ -156,19 +156,7 @@ const ValidateOTP = () => {
 
             {/* Additional Help */}
             <div className="mt-6 text-center text-sm text-gray-600">
-              <p>Didn't receive the code?</p>
-              <p className="mt-1">
-                Check your spam folder or{" "}
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(`/resendotp?email=${encodeURIComponent(email)}`)
-                  }
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  resend OTP
-                </button>
-              </p>
+              <p>OTP Validate Only 3 Minuts Before That Enter Code</p>
             </div>
           </div>
         </div>

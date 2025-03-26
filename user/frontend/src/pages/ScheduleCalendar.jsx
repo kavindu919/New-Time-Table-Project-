@@ -48,9 +48,9 @@ const EventDisplayCalendar = () => {
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-6  h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 ">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
             Event Calendar
           </h2>

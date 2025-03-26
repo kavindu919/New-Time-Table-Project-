@@ -27,6 +27,7 @@ import CourseProfilePage from "./pages/CourseProfilePage";
 import NotificationsTable from "./components/NotificationsTable";
 import NotificationProfilePage from "./pages/NotificationProfilePage";
 import UserActivitiesTable from "./components/UserActivitiesTable";
+import Requesttable from "./components/Requesttable";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const MainContent = () => {
           <Route path="/coursetable" element={<CoursesTable />} />
           <Route path="/notificationtable" element={<NotificationsTable />} />
           <Route path="/activitytable" element={<UserActivitiesTable />} />
+          <Route path="/requesttable" element={<Requesttable />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/resendotp" element={<ResendOTPForm />} />

@@ -7,6 +7,7 @@ import { FaChevronDown } from "react-icons/fa";
 import { FiBook } from "react-icons/fi";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { LuNewspaper } from "react-icons/lu";
+import { VscGitPullRequestNewChanges } from "react-icons/vsc";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -52,6 +53,15 @@ const Sidebar = () => {
             >
               <GiTeacher className="mr-3 text-xl" />
               <span className="text-lg">Teacher</span>
+            </Link>
+          </li>
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+            <Link
+              to="/requesttable"
+              className="flex items-center p-3 hover:text-white"
+            >
+              <VscGitPullRequestNewChanges className="mr-3 text-xl" />
+              <span className="text-lg">Request</span>
             </Link>
           </li>
 

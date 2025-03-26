@@ -14,6 +14,8 @@ import RegisterForm from "./pages/register";
 import ResendOTPForm from "./pages/Passwordrest";
 import OtpValidation from "./pages/OtpValidation";
 import PasswordrestPage from "./pages/PasswordrestPage";
+import TeacherRequestForm from "./pages/TeacherRequestForm";
+import RequestHistory from "./pages/RequestHistory";
 
 function App() {
   return (
@@ -32,8 +34,7 @@ const MainContent = () => {
     "/resendotp",
     "/validateotp",
     "/resetpassword",
-    "/validateotp",
-    "/submitotp",
+    "/forgotpassword",
   ];
   return (
     <div className="flex h-screen">
@@ -43,10 +44,12 @@ const MainContent = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
-          <Route path="/submitotp" element={<ResendOTPForm />} />
+          <Route path="/forgotpassword" element={<ResendOTPForm />} />
           <Route path="/validateotp" element={<OtpValidation />} />
           <Route path="/resetpassword" element={<PasswordrestPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/requestschedule" element={<TeacherRequestForm />} />
+          <Route path="/requestshistory" element={<RequestHistory />} />
         </Routes>
       </div>
     </div>

@@ -103,7 +103,7 @@ const LoginForm = () => {
               {/* Forgot Password Link */}
               <div className="flex justify-end">
                 <a
-                  href="/resendotp"
+                  href="/forgotpassword"
                   className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   Forgot Password?

@@ -27,6 +27,7 @@ model User {
   CourseTeacher     CourseTeacher[]
   Schedules         Schedules[]
   UserActivity      UserActivity[]
+  ScheduleRequest   ScheduleRequest[]
 }
 
 enum Gender {
@@ -94,11 +95,12 @@ enum RecipientType {
 }
 
 model Course {
-  id          String          @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String?
-  teachers    CourseTeacher[]
-  Schedules   Schedules[]
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String?
+  teachers        CourseTeacher[]
+  Schedules       Schedules[]
+  ScheduleRequest ScheduleRequest[]
 }
 
 model CourseTeacher {
@@ -108,4 +110,28 @@ model CourseTeacher {
 
   course  Course @relation(fields: [courseId], references: [id])
   teacher User   @relation(fields: [teacherId], references: [id])
+}
+
+model ScheduleRequest {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  teacherId   String        @db.ObjectId
+  courseId    String        @db.ObjectId
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  venue       String
+  duration    Int
+  description String?
+  status      RequestStatus @default(pending)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  teacher User   @relation(fields: [teacherId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+}
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
 }

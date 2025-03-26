@@ -44,6 +44,12 @@ import {
 } from "../controllers/Admin/Reports/reportController.js";
 import upload from "../../lib/multerconfig.js";
 import { authMiddleware } from "../utils/authMiddleware .js";
+import {
+  createScheduleRequest,
+  getPendingRequests,
+  getTeacherRequests,
+  processRequest,
+} from "../controllers/Admin/Request/teacherRequstController.js";
 
 const router = express.Router();
 
@@ -97,5 +103,11 @@ router.post("/getcoursedetails", getCourse);
 router.post("/useractivity", userActivity);
 router.post("/useractivityreports", userActivityReprot);
 router.get("/allusersactivitys", getAllUserActivities);
+
+//Request Routes
+router.post("/createschedulerequest", createScheduleRequest);
+router.get("/getteacherrequests/:id", getTeacherRequests);
+router.get("/getpendingrequests", getPendingRequests);
+router.post("/processrequest", processRequest);
 
 export default router;
