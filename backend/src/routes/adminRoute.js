@@ -28,6 +28,7 @@ import {
   deleteNotification,
   getNotifications,
   getSingleNotification,
+  getTeacherAndAllNotifications,
   updateNotification,
 } from "../controllers/Admin/Notifications/notificationConroller.js";
 import getCourse, {
@@ -81,6 +82,7 @@ router.post("/deleteNotification", deleteNotification);
 
 router.get("/getallNotification", getNotifications);
 router.post("/getnotification", getSingleNotification);
+router.get("/getteachernotifiation", getTeacherAndAllNotifications);
 
 //Route For Course Authentication and Course Management
 router.post("/addcourse", addCourse);

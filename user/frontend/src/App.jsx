@@ -8,6 +8,12 @@ import "./App.css";
 import { ToastContainer } from "react-toastify";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
+import NotificationsPage from "./components/NotificationsPage";
+import LoginForm from "./pages/login";
+import RegisterForm from "./pages/register";
+import ResendOTPForm from "./pages/Passwordrest";
+import OtpValidation from "./pages/OtpValidation";
+import PasswordrestPage from "./pages/PasswordrestPage";
 
 function App() {
   return (
@@ -26,6 +32,8 @@ const MainContent = () => {
     "/resendotp",
     "/validateotp",
     "/resetpassword",
+    "/validateotp",
+    "/submitotp",
   ];
   return (
     <div className="flex h-screen">
@@ -33,6 +41,12 @@ const MainContent = () => {
       <div className="flex-1 p-8">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/submitotp" element={<ResendOTPForm />} />
+          <Route path="/validateotp" element={<OtpValidation />} />
+          <Route path="/resetpassword" element={<PasswordrestPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Routes>
       </div>
     </div>
