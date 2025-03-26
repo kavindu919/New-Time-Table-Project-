@@ -41,14 +41,15 @@ import {
   userActivity,
   userActivityReprot,
 } from "../controllers/Admin/Reports/reportController.js";
-import { authMiddleware } from "../../src/utils/authMiddleware .js";
+import upload from "../../lib/multerconfig.js";
+import { authMiddleware } from "../utils/authMiddleware .js";
 
 const router = express.Router();
 
 // router.use(authMiddleware);
 
 //Route For User Authentication and User Management
-router.post("/adduser", registerUser);
+router.post("/adduser", upload.single("avatar"), registerUser);
 router.post("/updateuser", updateUser);
 router.post("/deleteuser", deleteUser);
 // router.post("/deleteuser", deleteUser);

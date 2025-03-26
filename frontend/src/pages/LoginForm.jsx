@@ -35,6 +35,9 @@ const LoginForm = () => {
       if (!response.ok) {
         throw new Error(data.message || "Invalid credentials");
       }
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
 
       setSuccess(data.message);
       toast.success(data.message);
