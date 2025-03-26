@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -38,6 +39,7 @@ const LoginForm = () => {
       setSuccess(data.message);
       toast.success(data.message);
       setFormData({ email: "", password: "" });
+      navigate("/");
     } catch (error) {
       toast.error(error.message);
     }
