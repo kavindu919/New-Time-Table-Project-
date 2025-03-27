@@ -38,7 +38,8 @@ const RegisterForm = () => {
     try {
       const response = await fetch("http://localhost:8080/api/user/register", {
         method: "POST",
-        body: formDataToSend, // Send as FormData
+        body: formDataToSend,
+        credentials: "include",
       });
 
       const data = await response.json();

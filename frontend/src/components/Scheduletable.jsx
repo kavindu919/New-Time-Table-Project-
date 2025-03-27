@@ -28,9 +28,16 @@ const ScheduleTable = () => {
   const fetchSchedules = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/admin/getallschedule"
+        "http://localhost:8080/api/admin/getallschedule",
+        {
+          credentials: "include",
+        }
       );
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         setSchedules(data.data);
       } else {
@@ -75,10 +82,15 @@ const ScheduleTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedScheduleId }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.message || "Failed to delete schedule");
       }
@@ -115,10 +127,15 @@ const ScheduleTable = () => {
             id: selectedScheduleId,
             ...editFormData,
           }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.message || "Failed to update schedule");
       }

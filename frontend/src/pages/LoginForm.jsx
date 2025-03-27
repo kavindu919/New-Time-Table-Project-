@@ -27,6 +27,7 @@ const LoginForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -34,9 +35,6 @@ const LoginForm = () => {
 
       if (!response.ok) {
         throw new Error(data.message || "Invalid credentials");
-      }
-      if (data.token) {
-        localStorage.setItem("token", data.token);
       }
 
       setSuccess(data.message);

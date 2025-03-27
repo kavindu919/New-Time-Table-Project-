@@ -21,15 +21,28 @@ const CoursesTable = () => {
     try {
       // Fetch courses
       const coursesResponse = await fetch(
-        "http://localhost:8080/api/admin/allcourses"
+        "http://localhost:8080/api/admin/allcourses",
+        {
+          credentials: "include",
+        }
       );
       const coursesData = await coursesResponse.json();
-
+      if (coursesResponse.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       // Fetch teachers
       const teachersResponse = await fetch(
-        "http://localhost:8080/api/admin/getallteachers"
+        "http://localhost:8080/api/admin/getallteachers",
+        {
+          credentials: "include",
+        }
       );
       const teachersData = await teachersResponse.json();
+      if (teachersResponse.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (coursesResponse.ok && teachersResponse.ok) {
         setCourses(coursesData.data);
@@ -92,6 +105,7 @@ const CoursesTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newCourse),
+          credentials: "include",
         }
       );
 
@@ -131,10 +145,15 @@ const CoursesTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ courseId: selectedCourseId }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to delete course");
 

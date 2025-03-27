@@ -10,8 +10,14 @@ const app = express();
 
 const port = process.env.PORT || 4000;
 
+const corsOptions = {
+  origin: "http://localhost:5174", // Your frontend URL
+  credentials: true, // Required for cookies
+  methods: ["GET", "POST", "PUT", "DELETE"],
+};
+
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use("/api/user", userRoute);

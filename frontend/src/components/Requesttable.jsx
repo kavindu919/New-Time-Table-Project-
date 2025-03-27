@@ -10,9 +10,16 @@ const RequestList = () => {
     const fetchRequests = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getpendingrequests"
+          "http://localhost:8080/api/admin/getpendingrequests",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         if (response.ok) {
           setRequests(data);
         } else {
@@ -35,10 +42,15 @@ const RequestList = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ requestId, action }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         toast.success(data.message);
         setRequests((prev) => prev.filter((req) => req.id !== requestId));

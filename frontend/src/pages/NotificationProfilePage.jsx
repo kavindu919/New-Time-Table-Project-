@@ -18,11 +18,15 @@ const NotificationProfilePage = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id }), // Send ID in the request body
+            body: JSON.stringify({ id }),
+            credentials: "include",
           }
         );
         const data = await response.json();
-
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         if (response.ok) {
           setNotification(data);
         } else {

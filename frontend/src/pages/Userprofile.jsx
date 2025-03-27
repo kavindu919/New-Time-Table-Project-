@@ -12,9 +12,16 @@ const ProfilePage = () => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/admin/getuser/${id}`
+          `http://localhost:8080/api/admin/getuser/${id}`,
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
 
         if (response.ok) {
           setUser(data.users); // Access 'users' directly since it's wrapped in 'users' in your backend response

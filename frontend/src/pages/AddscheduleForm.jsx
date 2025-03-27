@@ -29,9 +29,16 @@ const ScheduleForm = () => {
         // Fetch courses
         setLoading((prev) => ({ ...prev, courses: true }));
         const coursesResponse = await fetch(
-          "http://localhost:8080/api/admin/allcourses"
+          "http://localhost:8080/api/admin/allcourses",
+          {
+            credentials: "include",
+          }
         );
         const coursesData = await coursesResponse.json();
+        if (coursesResponse.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         if (coursesResponse.ok) {
           setCourses(coursesData.data);
         }
@@ -39,9 +46,16 @@ const ScheduleForm = () => {
         // Fetch teachers
         setLoading((prev) => ({ ...prev, teachers: true }));
         const teachersResponse = await fetch(
-          "http://localhost:8080/api/admin/getallteachers"
+          "http://localhost:8080/api/admin/getallteachers",
+          {
+            credentials: "include",
+          }
         );
         const teachersData = await teachersResponse.json();
+        if (teachersResponse.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         if (teachersResponse.ok) {
           setTeachers(teachersData.data || []);
         }
@@ -93,10 +107,15 @@ const ScheduleForm = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         toast.success(data.message);
         // Reset form

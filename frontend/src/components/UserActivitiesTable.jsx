@@ -22,9 +22,16 @@ const UserActivitiesTable = () => {
       if (filters.endDate) query.append("endDate", filters.endDate);
 
       const response = await fetch(
-        `http://localhost:8080/api/admin/allusersactivitys?${query.toString()}`
+        `http://localhost:8080/api/admin/allusersactivitys?${query.toString()}`,
+        {
+          credentials: "include",
+        }
       );
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (!response.ok)
         throw new Error(data.message || "Failed to fetch activities");
@@ -47,8 +54,15 @@ const UserActivitiesTable = () => {
       query.append("download", format);
 
       const response = await fetch(
-        `http://localhost:8080/api/admin/allusersactivitys?${query.toString()}`
+        `http://localhost:8080/api/admin/allusersactivitys?${query.toString()}`,
+        {
+          credentials: "include",
+        }
       );
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (format === "csv") {
         const blob = await response.blob();

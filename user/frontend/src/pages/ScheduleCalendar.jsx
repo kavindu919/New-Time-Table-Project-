@@ -13,9 +13,16 @@ const EventDisplayCalendar = () => {
     const fetchEvents = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getallschedule"
+          "http://localhost:8080/api/admin/getallschedule",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
 
         if (response.ok) {
           const formattedEvents = data.data.map((schedule) => ({

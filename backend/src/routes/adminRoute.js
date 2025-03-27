@@ -50,64 +50,83 @@ import {
   getTeacherRequests,
   processRequest,
 } from "../controllers/Admin/Request/teacherRequstController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // router.use(authMiddleware);
+// router.use(verifyToken);
 
 //Route For User Authentication and User Management
-router.post("/adduser", upload.single("avatar"), registerUser);
-router.post("/updateuser", updateUser);
-router.post("/deleteuser", deleteUser);
+router.post(
+  "/adduser",
+  upload.single("avatar"),
+  verifyToken(["admin"]),
+  registerUser
+);
+router.post("/updateuser", verifyToken(["admin"]), updateUser);
+router.post("/deleteuser", verifyToken(["admin"]), deleteUser);
 // router.post("/deleteuser", deleteUser);
-router.post("/verifyuser", setUserState);
+router.post("/verifyuser", verifyToken(["admin"]), setUserState);
 
-router.get("/getallusers", getAllStudents);
-router.get("/getuser/:id", getSingleStudents);
+router.get("/getallusers", verifyToken(["admin"]), getAllStudents);
+router.get("/getuser/:id", verifyToken(["admin"]), getSingleStudents);
 
 //Route For Teacher Authentication and Teacher Management
-router.post("/addteacher", registerTeacher);
-router.post("/updateteacher", updateTeacher);
-router.post("/deleteteacher", deleteTeacher);
-router.post("/verifyteacher", setTeacherState);
+router.post("/addteacher", verifyToken(["admin"]), registerTeacher);
+router.post("/updateteacher", verifyToken(["admin"]), updateTeacher);
+router.post("/deleteteacher", verifyToken(["admin"]), deleteTeacher);
+router.post("/verifyteacher", verifyToken(["admin"]), setTeacherState);
 
-router.get("/getallteachers", getAllTeachers);
-router.get("/getteacher/:id", getSingleTeacher);
+router.get("/getallteachers", verifyToken(["admin"]), getAllTeachers);
+router.get("/getteacher/:id", verifyToken(["admin"]), getSingleTeacher);
 
 //Route For Schedule Authentication and Schedule Management
-router.post("/addschedule", addSchedule);
-router.post("/deleteschedule", deleteSchedule);
-router.post("/updateschedule", updateSchedule);
-router.post("/reassignschedule", reassignSchedule);
+router.post("/addschedule", verifyToken(["admin"]), addSchedule);
+router.post("/deleteschedule", verifyToken(["admin"]), deleteSchedule);
+router.post("/updateschedule", verifyToken(["admin"]), updateSchedule);
+router.post("/reassignschedule", verifyToken(["admin"]), reassignSchedule);
 
 router.get("/getallschedule", getAllSchedules);
-router.get("/getsingleschedule/:id", getSingleSchedule);
+router.get("/getsingleschedule/:id", verifyToken(["admin"]), getSingleSchedule);
 
 //Route For Notification Authentication and Notification Management
-router.post("/addnotification", addNotification);
-router.post("/updatenotification", updateNotification);
-router.post("/deleteNotification", deleteNotification);
+router.post("/addnotification", verifyToken(["admin"]), addNotification);
+router.post("/updatenotification", verifyToken(["admin"]), updateNotification);
+router.post("/deleteNotification", verifyToken(["admin"]), deleteNotification);
 
-router.get("/getallNotification", getNotifications);
-router.post("/getnotification", getSingleNotification);
-router.get("/getteachernotifiation", getTeacherAndAllNotifications);
+router.get("/getallNotification", verifyToken(["admin"]), getNotifications);
+router.post("/getnotification", verifyToken(["admin"]), getSingleNotification);
+router.get(
+  "/getteachernotifiation",
+  verifyToken(["admin"]),
+  getTeacherAndAllNotifications
+);
 
 //Route For Course Authentication and Course Management
-router.post("/addcourse", addCourse);
-router.post("/deletecourse", deleteCourse);
-router.get("/allcourses", getAllCourses);
-router.post("/getcoursedetails", getCourse);
+router.post("/addcourse", verifyToken(["admin"]), addCourse);
+router.post("/deletecourse", verifyToken(["admin"]), deleteCourse);
+router.get("/allcourses", verifyToken(["admin"]), getAllCourses);
+router.post("/getcoursedetails", verifyToken(["admin"]), getCourse);
 // router.post("/assignteacher", assignTeacher);
 
 //Route For Reports Management
-router.post("/useractivity", userActivity);
-router.post("/useractivityreports", userActivityReprot);
-router.get("/allusersactivitys", getAllUserActivities);
+router.post("/useractivity", verifyToken(["admin"]), userActivity);
+router.post("/useractivityreports", verifyToken(["admin"]), userActivityReprot);
+router.get("/allusersactivitys", verifyToken(["admin"]), getAllUserActivities);
 
 //Request Routes
-router.post("/createschedulerequest", createScheduleRequest);
-router.get("/getteacherrequests/:id", getTeacherRequests);
-router.get("/getpendingrequests", getPendingRequests);
-router.post("/processrequest", processRequest);
+router.post(
+  "/createschedulerequest",
+  verifyToken(["teacher"]),
+  createScheduleRequest
+);
+router.get(
+  "/getteacherrequests/:id",
+  verifyToken(["teacher"]),
+  getTeacherRequests
+);
+router.get("/getpendingrequests", verifyToken(["admin"]), getPendingRequests);
+router.post("/processrequest", verifyToken(["admin"]), processRequest);
 
 export default router;

@@ -12,9 +12,16 @@ const TeacherProfilePage = () => {
     const fetchTeacherData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/admin/getteacher/${id}`
+          `http://localhost:8080/api/admin/getteacher/${id}`,
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
 
         if (response.ok) {
           setTeacher(data.users); // Access 'users' directly as it's returned from the backend

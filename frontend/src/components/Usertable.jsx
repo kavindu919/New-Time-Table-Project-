@@ -36,9 +36,16 @@ const UsersTable = () => {
     const fetchUsers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getallusers"
+          "http://localhost:8080/api/admin/getallusers",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         setUsers(data.users);
         toast.success(data.message);
       } catch (error) {
@@ -76,19 +83,31 @@ const UsersTable = () => {
 
       const response = await fetch("http://localhost:8080/api/admin/adduser", {
         method: "POST",
-        body: formData, // No Content-Type header needed for FormData
+        body: formData,
+        credentials: "include",
       });
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.message || "Failed to add student");
       }
 
-      // Refresh the users list
       const usersResponse = await fetch(
-        "http://localhost:8080/api/admin/getallusers"
+        "http://localhost:8080/api/admin/getallusers",
+        {
+          credentials: "include",
+        }
       );
+
       const usersData = await usersResponse.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       setUsers(usersData.users);
 
       toast.success("Student added successfully");
@@ -137,10 +156,15 @@ const UsersTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedUserId }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to delete user");
 
@@ -179,10 +203,15 @@ const UsersTable = () => {
             id: selectedUserId,
             ...editFormData,
           }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to update user");
 
@@ -208,9 +237,14 @@ const UsersTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedUserId, status: "active" }), // Set to "active" or another status
+          credentials: "include",
         }
       );
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to verify user");
       toast.success(data.message);
@@ -242,9 +276,14 @@ const UsersTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedUserId, status: "deactive" }),
+          credentials: "include",
         }
       );
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to unverify user");
 

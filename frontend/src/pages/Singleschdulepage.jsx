@@ -26,9 +26,16 @@ const ScheduleDetailsPage = () => {
     const fetchScheduleData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/admin/getsingleschedule/${id}`
+          `http://localhost:8080/api/admin/getsingleschedule/${id}`,
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
 
         if (response.ok) {
           setSchedule(data.data);
@@ -63,10 +70,17 @@ const ScheduleDetailsPage = () => {
     const fetchTeachers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getallteachers"
+          "http://localhost:8080/api/admin/getallteachers",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
-        setTeachers(data.data); // Changed to setTeachers
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        setTeachers(data.data);
       } catch (error) {
         toast.error("Something went wrong. Please try again.");
         setLoading(false);
@@ -101,10 +115,15 @@ const ScheduleDetailsPage = () => {
             teacherId: formData.teacherId,
             recipientType: "all",
           }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       setSchedule((prev) => ({
         ...prev,

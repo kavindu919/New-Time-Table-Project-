@@ -19,9 +19,16 @@ const NotificationsTable = () => {
   const fetchNotifications = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/admin/getallNotification"
+        "http://localhost:8080/api/admin/getallNotification",
+        {
+          credentials: "include",
+        }
       );
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         setNotifications(data);
       } else {
@@ -63,10 +70,15 @@ const NotificationsTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newNotification),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to add notification");
 
@@ -96,10 +108,15 @@ const NotificationsTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedNotificationId }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to delete notification");
 

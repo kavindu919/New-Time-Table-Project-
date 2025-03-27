@@ -41,45 +41,113 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// export const login = async function (req, res) {
+//   const { email, password } = req.body;
+//   if (!email || !password) {
+//     return res.status(400).json({ message: "Email and password are required" });
+//   }
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { email: email },
+//     });
+//     if (!user) {
+//       return res.status(401).json({ message: "User Not Found" });
+//     }
+//     const isValidPassword = await bcrypt.compare(password, user.password);
+//     if (!isValidPassword) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     const age = 1000 * 60 * 60 * 24;
+//     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+//       expiresIn: age,
+//     });
+
+//     await prisma.user.update({
+//       where: { email: email },
+//       data: { sessionToken: token },
+//     });
+//     await logUserActivity(user.id, "User logged in");
+
+//     return res
+//       .cookie("token", token, {
+//         httpOnly: true,
+//         // secure:true,
+//         maxAge: age,
+//       })
+//       .status(200)
+//       .json({ message: "Login successfully", token, userId: user.id });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: "Something went wrong" });
+//   }
+// };
+
+// Backend: authController.js or similar
+
 export const login = async function (req, res) {
   const { email, password } = req.body;
+
+  // Input validation
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
+
   try {
+    // Find user
     const user = await prisma.user.findUnique({
       where: { email: email },
     });
+
     if (!user) {
-      return res.status(401).json({ message: "User Not Found" });
+      return res.status(401).json({ message: "Invalid credentials" }); // Generic message for security
     }
+
+    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const age = 1000 * 60 * 60 * 24;
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: age,
-    });
+    // Create JWT token
+    const tokenAge = 1000 * 60 * 60 * 24; // 1 day
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role, // Include role if you have role-based auth
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: tokenAge / 1000 } // Convert to seconds
+    );
 
+    // Store token in database (optional)
     await prisma.user.update({
       where: { email: email },
       data: { sessionToken: token },
     });
+
+    // Log activity
     await logUserActivity(user.id, "User logged in");
 
-    return res
-      .cookie("token", token, {
-        httpOnly: true,
-        // secure:true,
-        maxAge: age,
-      })
-      .status(200)
-      .json({ message: "Login successfully", token, userId: user.id });
+    // Set cookie and send response
+    res.cookie("authToken", token, {
+      httpOnly: true, // Prevents JavaScript access
+      secure: process.env.NODE_ENV === "production", // HTTPS-only in production
+      sameSite: "strict", // Prevents CSRF attacks
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiry
+      domain: "localhost", // Adjust in production
+      path: "/", // Available on all routes
+    });
+
+    // Return success response (without token)
+    return res.status(200).json({
+      message: "Login successful",
+      user: { id: user.id, email: user.email },
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Something went wrong" });
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -92,7 +160,10 @@ export const logout = async (req, res) => {
     });
     await logUserActivity(id, "User logged out");
 
-    res.clearCookie("token").status(200).json({ message: "Logout sucssefuly" });
+    res
+      .clearCookie("authToken")
+      .status(200)
+      .json({ message: "Logout sucssefuly" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

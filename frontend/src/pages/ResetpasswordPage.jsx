@@ -43,7 +43,8 @@ const ResetPassword = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }), // Send email and password in the body
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
         }
       );
 

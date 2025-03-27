@@ -29,9 +29,17 @@ const TeachersTable = () => {
     const fetchTeachers = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getallteachers"
+          "http://localhost:8080/api/admin/getallteachers",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+
         console.log(data);
         setTeachers(data.data);
         toast.success(data.message);
@@ -71,10 +79,15 @@ const TeachersTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedTeacherId }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to delete teacher");
 
@@ -110,10 +123,15 @@ const TeachersTable = () => {
             id: selectedTeacherId,
             ...editFormData,
           }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok)
         throw new Error(data.message || "Failed to update teacher");
 
@@ -146,6 +164,7 @@ const TeachersTable = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: selectedVerifyId, status: "active" }),
+          credentials: "include",
         }
       );
 
