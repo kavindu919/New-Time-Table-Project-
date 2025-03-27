@@ -14,11 +14,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="h-full w-64 bg-gray-900 text-white shadow-lg">
+    <div className=" h-screen w-64 bg-gray-900 text-white shadow-lg">
       <div className="flex items-center justify-center py-6 border-b border-gray-700">
-        <h2 className="text-3xl font-semibold text-indigo-500">
-          Admin Dashboard
-        </h2>
+        <h2 className="text-3xl font-semibold text-indigo-500">Dashboard</h2>
       </div>
       <nav className="mt-6">
         <ul>

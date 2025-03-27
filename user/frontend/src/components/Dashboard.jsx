@@ -2,7 +2,7 @@ import ScheduleCalendar from "../pages/ScheduleCalendar";
 
 const Dashboard = () => {
   return (
-    <div className=" h-screen">
+    <div>
       <ScheduleCalendar />
     </div>
   );

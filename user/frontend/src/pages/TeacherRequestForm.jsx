@@ -5,10 +5,14 @@ import { toast } from "react-toastify";
 const ScheduleRequestForm = ({ onSubmit }) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Get teacher ID from localStorage
+  const teacherId = localStorage.getItem("userId") || "";
+
   const [formData, setFormData] = useState({
     courseId: "",
     courseName: "",
-    teacherId: "", // Now manually entered
+    teacherId: teacherId, // Set from localStorage
     date: "",
     startTime: "",
     endTime: "",
@@ -63,40 +67,6 @@ const ScheduleRequestForm = ({ onSubmit }) => {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await fetch(
-  //       "http://localhost:8080/api/admin/createschedulerequest",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify(formData),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       toast.success(data.message);
-  //       onSubmit(data.request);
-  //       setFormData({
-  //         courseId: "",
-  //         courseName: "",
-  //         teacherId: "",
-  //         date: "",
-  //         startTime: "",
-  //         endTime: "",
-  //         venue: "",
-  //         duration: "",
-  //         description: "",
-  //       });
-  //     } else {
-  //       throw new Error(data.message);
-  //     }
-  //   } catch (error) {
-  //     toast.error(error.message);
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -117,14 +87,13 @@ const ScheduleRequestForm = ({ onSubmit }) => {
       }
       if (response.ok) {
         toast.success(data.message);
-        // Check if onSubmit exists before calling it
         if (typeof onSubmit === "function") {
           onSubmit(data.request);
         }
         setFormData({
+          ...formData, // Keep the teacherId
           courseId: "",
           courseName: "",
-          teacherId: "",
           date: "",
           startTime: "",
           endTime: "",
@@ -139,27 +108,12 @@ const ScheduleRequestForm = ({ onSubmit }) => {
       toast.error(error.message);
     }
   };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">New Schedule Request</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* Teacher ID Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Teacher ID
-            </label>
-            <input
-              type="text"
-              name="teacherId"
-              value={formData.teacherId}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-              placeholder="Enter teacher ID"
-            />
-          </div>
-
           {/* Course Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -272,6 +226,9 @@ const ScheduleRequestForm = ({ onSubmit }) => {
             className="w-full p-2 border rounded"
           />
         </div>
+
+        {/* Hidden teacherId field */}
+        <input type="hidden" name="teacherId" value={formData.teacherId} />
 
         {/* Submit Button */}
         <button

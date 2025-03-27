@@ -73,7 +73,7 @@ const EventDisplayCalendar = () => {
                 right: "dayGridMonth,timeGridWeek,timeGridDay",
               }}
               events={events}
-              height={700}
+              height={500}
               eventContent={(eventInfo) => (
                 <div className="fc-event-content p-2">
                   <div className="font-semibold text-sm text-white">

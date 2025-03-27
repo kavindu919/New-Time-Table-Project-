@@ -99,14 +99,14 @@ router.get("/getallNotification", verifyToken(["admin"]), getNotifications);
 router.post("/getnotification", verifyToken(["admin"]), getSingleNotification);
 router.get(
   "/getteachernotifiation",
-  verifyToken(["admin"]),
+  verifyToken(["teacher"]),
   getTeacherAndAllNotifications
 );
 
 //Route For Course Authentication and Course Management
 router.post("/addcourse", verifyToken(["admin"]), addCourse);
 router.post("/deletecourse", verifyToken(["admin"]), deleteCourse);
-router.get("/allcourses", verifyToken(["admin"]), getAllCourses);
+router.get("/allcourses", verifyToken(["admin", "teacher"]), getAllCourses);
 router.post("/getcoursedetails", verifyToken(["admin"]), getCourse);
 // router.post("/assignteacher", assignTeacher);
 
