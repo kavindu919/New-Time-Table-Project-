@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaTachometerAlt, FaUsers } from "react-icons/fa";
+import { FaTachometerAlt, FaUsers, FaChevronDown } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
 import { AiOutlineSchedule } from "react-icons/ai";
-import { FaChevronDown } from "react-icons/fa";
 import { FiBook } from "react-icons/fi";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { LuNewspaper } from "react-icons/lu";
@@ -12,7 +11,6 @@ import { VscGitPullRequestNewChanges } from "react-icons/vsc";
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Toggle dropdown visibility
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
   };
@@ -25,9 +23,9 @@ const Sidebar = () => {
         </h2>
       </div>
       <nav className="mt-6">
-        <ul>
+        <ul className="space-y-1">
           {/* Dashboard Link */}
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link to="/" className="flex items-center p-3 hover:text-white">
               <FaTachometerAlt className="mr-3 text-xl" />
               <span className="text-lg">Dashboard</span>
@@ -35,7 +33,7 @@ const Sidebar = () => {
           </li>
 
           {/* Users Link */}
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/usertable"
               className="flex items-center p-3 hover:text-white"
@@ -46,7 +44,7 @@ const Sidebar = () => {
           </li>
 
           {/* Teacher Link */}
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/teachertable"
               className="flex items-center p-3 hover:text-white"
@@ -55,7 +53,8 @@ const Sidebar = () => {
               <span className="text-lg">Teacher</span>
             </Link>
           </li>
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/requesttable"
               className="flex items-center p-3 hover:text-white"
@@ -66,15 +65,17 @@ const Sidebar = () => {
           </li>
 
           {/* Schedule Link with Dropdown */}
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="rounded-md mx-2">
             <button
               onClick={toggleDropdown}
-              className="flex items-center p-3 w-full text-left hover:text-white"
+              className={`flex items-center p-3 w-full text-left hover:text-white transition-all duration-300 ease-in-out ${
+                isDropdownOpen ? "bg-indigo-600" : "hover:bg-indigo-600"
+              }`}
             >
               <AiOutlineSchedule className="mr-3 text-xl" />
               <span className="text-lg">Schedule</span>
               <FaChevronDown
-                className={`ml-2 text-sm transition-transform duration-300 ${
+                className={`ml-auto text-sm transition-transform duration-300 ${
                   isDropdownOpen ? "transform rotate-180" : ""
                 }`}
               />
@@ -82,23 +83,28 @@ const Sidebar = () => {
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <ul className="pl-8 mt-2 space-y-2">
-                <li className="hover:bg-indigo-500 transition-all duration-300 ease-in-out">
-                  <Link to="/addschecule" className="flex items-center p-2">
-                    <span className="text-lg">Add Schedule</span>
+              <ul className="pl-4 mt-1 space-y-1 bg-gray-800 rounded-md mx-2 py-1">
+                <li className="hover:bg-indigo-500 transition-all duration-300 ease-in-out rounded-md">
+                  <Link
+                    to="/addschecule"
+                    className="flex items-center p-2 pl-8"
+                  >
+                    <span>Add Schedule</span>
                   </Link>
                 </li>
-                <li className="hover:bg-indigo-500 transition-all duration-300 ease-in-out">
-                  <Link to="/scheuletable" className="flex items-center p-2">
-                    <span className="text-lg">All Schedule</span>
+                <li className="hover:bg-indigo-500 transition-all duration-300 ease-in-out rounded-md">
+                  <Link
+                    to="/scheuletable"
+                    className="flex items-center p-2 pl-8"
+                  >
+                    <span>All Schedule</span>
                   </Link>
                 </li>
-
-                {/* Additional dropdown items can go here */}
               </ul>
             )}
           </li>
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/activitytable"
               className="flex items-center p-3 hover:text-white"
@@ -108,7 +114,7 @@ const Sidebar = () => {
             </Link>
           </li>
 
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/coursetable"
               className="flex items-center p-3 hover:text-white"
@@ -117,7 +123,7 @@ const Sidebar = () => {
               <span className="text-lg">Course</span>
             </Link>
           </li>
-          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out">
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
             <Link
               to="/notificationtable"
               className="flex items-center p-3 hover:text-white"
