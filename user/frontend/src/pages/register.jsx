@@ -46,9 +46,14 @@ const RegisterForm = () => {
       const response = await fetch("http://localhost:8080/api/user/register", {
         method: "POST",
         body: formDataToSend,
+        credentials: "include",
       });
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) throw new Error(data.message);
 
       toast.success("Registration successful!");

@@ -22,9 +22,17 @@ const ScheduleRequestForm = ({ onSubmit }) => {
       try {
         setLoading(true);
         const response = await fetch(
-          "http://localhost:8080/api/admin/allcourses"
+          "http://localhost:8080/api/admin/allcourses",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+
         if (response.ok) {
           setCourses(data.data || []);
         } else {
@@ -98,10 +106,15 @@ const ScheduleRequestForm = ({ onSubmit }) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         toast.success(data.message);
         // Check if onSubmit exists before calling it

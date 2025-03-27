@@ -90,10 +90,15 @@ const ResetPassword = () => {
             email: formData.email,
             password: formData.password,
           }),
+          credentials: "include",
         }
       );
 
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.message || "Failed to reset password");
       }

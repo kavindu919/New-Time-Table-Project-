@@ -17,9 +17,16 @@ const TeacherNotificationsPage = () => {
     const fetchNotifications = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getteachernotifiation"
+          "http://localhost:8080/api/admin/getteachernotifiation",
+          {
+            credentials: "include",
+          }
         );
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
 
         if (response.ok) {
           // Sort by date (newest first) and take latest 10
@@ -47,10 +54,14 @@ const TeacherNotificationsPage = () => {
       const response = await fetch(
         "http://localhost:8080/api/teacher/notifications/mark-all-read",
         {
-          method: "PUT",
+          method: "POST",
+          credentials: "include",
         }
       );
-
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (response.ok) {
         setNotifications(notifications.map((n) => ({ ...n, read: true })));
         setUnreadCount(0);

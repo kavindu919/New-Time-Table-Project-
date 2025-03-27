@@ -23,12 +23,20 @@ const TeacherRequestsView = () => {
         setLoading(true);
         // const response = await fetch(`/api/getteacherrequests/${id}`);
         const response = await fetch(
-          "http://localhost:8080/api/admin/getteacherrequests/67e0502dda8114cce6c68688"
+          "http://localhost:8080/api/admin/getteacherrequests/67e0502dda8114cce6c68688",
+          {
+            credentials: "include",
+          }
         );
         if (!response.ok) {
           throw new Error("Failed to fetch requests");
         }
         const data = await response.json();
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+
         setRequests(data);
       } catch (error) {
         console.error("Failed to load requests:", error);
