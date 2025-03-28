@@ -15,15 +15,97 @@ const RegisterForm = () => {
     firstName: "",
     lastName: "",
     password: "",
+    confirmPassword: "",
     gender: "",
     contactNumber: "",
     avatar: null,
   });
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState(null);
 
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex =
+      /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,3}[-\s.]?[0-9]{3,6}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    // First Name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    } else if (formData.firstName.length < 2) {
+      newErrors.firstName = "First name must be at least 2 characters";
+    } else if (formData.firstName.length > 50) {
+      newErrors.firstName = "First name must be less than 50 characters";
+    }
+
+    // Last Name validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (formData.lastName.length < 2) {
+      newErrors.lastName = "Last name must be at least 2 characters";
+    } else if (formData.lastName.length > 50) {
+      newErrors.lastName = "Last name must be less than 50 characters";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character";
+    }
+
+    // Confirm Password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    // Gender validation
+    if (!formData.gender) {
+      newErrors.gender = "Gender is required";
+    }
+
+    // Contact Number validation
+    if (!formData.contactNumber.trim()) {
+      newErrors.contactNumber = "Contact number is required";
+    } else if (!phoneRegex.test(formData.contactNumber)) {
+      newErrors.contactNumber = "Please enter a valid phone number";
+    }
+
+    // Avatar validation
+    if (!formData.avatar) {
+      newErrors.avatar = "Profile picture is required";
+    } else if (formData.avatar.size > 2 * 1024 * 1024) {
+      // 2MB limit
+      newErrors.avatar = "Image size must be less than 2MB";
+    } else if (!formData.avatar.type.match("image.*")) {
+      newErrors.avatar = "Only image files are allowed";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
+    }
+
     if (type === "file") {
       const file = files[0];
       setFormData({ ...formData, avatar: file });
@@ -35,11 +117,19 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
     setIsLoading(true);
 
     const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      formDataToSend.append(key, formData[key]);
+    // Don't include confirmPassword in the form data sent to the server
+    const { confirmPassword, ...dataToSend } = formData;
+    Object.keys(dataToSend).forEach((key) => {
+      formDataToSend.append(key, dataToSend[key]);
     });
 
     try {
@@ -63,11 +153,13 @@ const RegisterForm = () => {
         firstName: "",
         lastName: "",
         password: "",
+        confirmPassword: "",
         gender: "",
         contactNumber: "",
         avatar: null,
       });
       setPreview(null);
+      setErrors({});
     } catch (err) {
       toast.error(err.message || "Registration failed. Please try again.");
     } finally {
@@ -76,7 +168,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           {/* Form Header */}
@@ -96,7 +188,7 @@ const RegisterForm = () => {
               {/* First Name */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  First Name
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -108,16 +200,24 @@ const RegisterForm = () => {
                     value={formData.firstName}
                     onChange={handleChange}
                     placeholder="John"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.firstName ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
+                    maxLength="50"
                   />
                 </div>
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.firstName}
+                  </p>
+                )}
               </div>
 
               {/* Last Name */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -129,16 +229,22 @@ const RegisterForm = () => {
                     value={formData.lastName}
                     onChange={handleChange}
                     placeholder="Doe"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.lastName ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
+                    maxLength="50"
                   />
                 </div>
+                {errors.lastName && (
+                  <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
+                )}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -150,16 +256,21 @@ const RegisterForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your@email.com"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.email ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                   />
                 </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                )}
               </div>
 
               {/* Password */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Password
+                  Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -171,16 +282,55 @@ const RegisterForm = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.password ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                   />
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Must be at least 8 characters with uppercase, lowercase,
+                  number, and special character
+                </p>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="text-gray-400" />
+                  </div>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.confirmPassword
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    required
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               {/* Gender */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Gender
+                  Gender <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -190,7 +340,9 @@ const RegisterForm = () => {
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white ${
+                      errors.gender ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                   >
                     <option value="">Select Gender</option>
@@ -199,12 +351,15 @@ const RegisterForm = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
+                {errors.gender && (
+                  <p className="mt-1 text-sm text-red-500">{errors.gender}</p>
+                )}
               </div>
 
               {/* Contact Number */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Contact Number
+                  Contact Number <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -216,18 +371,33 @@ const RegisterForm = () => {
                     value={formData.contactNumber}
                     onChange={handleChange}
                     placeholder="+1 234 567 890"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                      errors.contactNumber
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     required
                   />
                 </div>
+                {errors.contactNumber && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.contactNumber}
+                  </p>
+                )}
               </div>
 
               {/* Avatar Upload */}
               <div className="col-span-1 md:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Profile Picture
+                  Profile Picture <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1 relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:border-blue-400 hover:bg-gray-100 transition">
+                <div
+                  className={`mt-1 relative flex flex-col items-center justify-center w-full h-40 border-2 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition ${
+                    errors.avatar
+                      ? "border-red-500"
+                      : "border-dashed border-gray-300 hover:border-blue-400"
+                  }`}
+                >
                   {preview ? (
                     <div className="relative w-full h-full">
                       <img
@@ -247,7 +417,7 @@ const RegisterForm = () => {
                         Drag & drop your photo here, or click to select
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Recommended size: 500x500px
+                        Recommended size: 500x500px (Max 2MB)
                       </p>
                     </div>
                   )}
@@ -259,6 +429,9 @@ const RegisterForm = () => {
                     className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                   />
                 </div>
+                {errors.avatar && (
+                  <p className="mt-1 text-sm text-red-500">{errors.avatar}</p>
+                )}
               </div>
 
               {/* Submit Button */}
