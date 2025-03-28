@@ -13,7 +13,7 @@ export const addSchedule = async (req, res) => {
     teacherId,
     recipientType,
   } = req.body;
-
+  console.log(req.body);
   const startDateTime = new Date(`${date}T${startTime}:00Z`).toISOString();
   const endDateTime = new Date(`${date}T${endTime}:00Z`).toISOString();
 
