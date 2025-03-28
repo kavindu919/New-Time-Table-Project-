@@ -26,19 +26,20 @@ const LoginForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(formData),
         credentials: "include",
       });
 
       const data = await response.json();
-      if (response.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(data.message || "Invalid credentials");
+      }
+      if (data.user) {
+        localStorage.setItem(
+          "userId",
+          JSON.stringify({ userId: data.user.id, role: data.user.role })
+        );
       }
 
       toast.success(data.message || "Login successful!");

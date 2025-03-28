@@ -17,7 +17,7 @@ const TeacherNotificationsPage = () => {
     const fetchNotifications = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/admin/getteachernotifiation",
+          "http://localhost:8080/api/admin/getusernotifiation",
           {
             credentials: "include",
           }

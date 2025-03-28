@@ -28,6 +28,7 @@ import {
   deleteNotification,
   getNotifications,
   getSingleNotification,
+  getStudentAndAllNotifications,
   getTeacherAndAllNotifications,
   updateNotification,
 } from "../controllers/Admin/Notifications/notificationConroller.js";
@@ -106,6 +107,11 @@ router.get(
   "/getteachernotifiation",
   verifyToken(["teacher"]),
   getTeacherAndAllNotifications
+);
+router.get(
+  "/getusernotifiation",
+  verifyToken(["user"]),
+  getStudentAndAllNotifications
 );
 
 //Route For Course Authentication and Course Management

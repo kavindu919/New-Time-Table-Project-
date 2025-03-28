@@ -97,3 +97,21 @@ export const getTeacherAndAllNotifications = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+export const getStudentAndAllNotifications = async (req, res) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: {
+        OR: [{ recipientType: "student" }, { recipientType: "all" }],
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 4,
+    });
+
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};

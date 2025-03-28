@@ -16,6 +16,8 @@ import OtpValidation from "./pages/OtpValidation";
 import PasswordrestPage from "./pages/PasswordrestPage";
 import TeacherRequestForm from "./pages/TeacherRequestForm";
 import RequestHistory from "./pages/RequestHistory";
+import Studentnotification from "./pages/Studentnotification";
+import ProtectedRoute from "./utils/ProtectedRoute";
 
 function App() {
   return (
@@ -36,6 +38,7 @@ const MainContent = () => {
     "/resetpassword",
     "/forgotpassword",
   ];
+
   return (
     <div className="flex h-screen">
       {!authRoutes.includes(location.pathname) && <Sidebar />}
@@ -47,9 +50,36 @@ const MainContent = () => {
           <Route path="/forgotpassword" element={<ResendOTPForm />} />
           <Route path="/validateotp" element={<OtpValidation />} />
           <Route path="/resetpassword" element={<PasswordrestPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/requestschedule" element={<TeacherRequestForm />} />
-          <Route path="/requestshistory" element={<RequestHistory />} />
+          <Route
+            path="/studentnotifications"
+            element={<Studentnotification />}
+          />
+
+          {/* Protected Routes */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/requestschedule"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherRequestForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/requestshistory"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <RequestHistory />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </div>
