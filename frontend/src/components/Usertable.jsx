@@ -27,6 +27,14 @@ const UsersTable = () => {
     contactNumber: "",
     avatarFile: null,
   });
+  const [addStudentFormErrors, setAddStudentFormErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    contactNumber: "",
+    avatarFile: "",
+  });
   const navigate = useNavigate();
   const handleUserProfileClick = (userId) => {
     navigate(`/userprofile/${userId}`); // Navigate to the user profile page
@@ -59,6 +67,70 @@ const UsersTable = () => {
     fetchUsers();
   }, []);
 
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validatePhone = (phone) => {
+    const re = /^[0-9]{10,15}$/;
+    return re.test(phone);
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 8;
+  };
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      contactNumber: "",
+      avatarFile: "",
+    };
+
+    if (!addStudentFormData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+      valid = false;
+    }
+
+    if (!addStudentFormData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+      valid = false;
+    }
+
+    if (!addStudentFormData.email) {
+      newErrors.email = "Email is required";
+      valid = false;
+    } else if (!validateEmail(addStudentFormData.email)) {
+      newErrors.email = "Please enter a valid email";
+      valid = false;
+    }
+
+    if (!addStudentFormData.password) {
+      newErrors.password = "Password is required";
+      valid = false;
+    } else if (!validatePassword(addStudentFormData.password)) {
+      newErrors.password = "Password must be at least 8 characters";
+      valid = false;
+    }
+
+    if (!addStudentFormData.contactNumber) {
+      newErrors.contactNumber = "Contact number is required";
+      valid = false;
+    } else if (!validatePhone(addStudentFormData.contactNumber)) {
+      newErrors.contactNumber =
+        "Please enter a valid phone number (10-15 digits)";
+      valid = false;
+    }
+
+    setAddStudentFormErrors(newErrors);
+    return valid;
+  };
+
   const handleAddStudentChange = (e) => {
     const { name, value } = e.target;
     setAddStudentFormData((prevData) => ({
@@ -69,6 +141,9 @@ const UsersTable = () => {
 
   const handleAddStudentSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("firstName", addStudentFormData.firstName);
@@ -364,7 +439,7 @@ const UsersTable = () => {
                   {user.status === "active" ? "Completed" : "Failed"}
                 </span>
               </td>
-              <td className="px-4 py-3">
+              <td className="px-2 py-3">
                 <button
                   onClick={() => handleEdit(user)}
                   className="px-2 py-1 text-xs font-semibold bg-blue-500 text-white rounded hover:bg-blue-600 transition mr-1"
@@ -575,6 +650,11 @@ const UsersTable = () => {
                       className="w-full px-3 py-2 border rounded"
                       required
                     />
+                    {addStudentFormErrors.firstName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {addStudentFormErrors.firstName}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -589,6 +669,11 @@ const UsersTable = () => {
                       className="w-full px-3 py-2 border rounded"
                       required
                     />
+                    {addStudentFormErrors.lastName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {addStudentFormErrors.lastName}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -603,6 +688,11 @@ const UsersTable = () => {
                       className="w-full px-3 py-2 border rounded"
                       required
                     />
+                    {addStudentFormErrors.email && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {addStudentFormErrors.email}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -620,6 +710,11 @@ const UsersTable = () => {
                       className="w-full px-3 py-2 border rounded"
                       required
                     />
+                    {addStudentFormErrors.password && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {addStudentFormErrors.password}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -650,6 +745,11 @@ const UsersTable = () => {
                       className="w-full px-3 py-2 border rounded"
                       required
                     />
+                    {addStudentFormErrors.contactNumber && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {addStudentFormErrors.contactNumber}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -713,6 +813,11 @@ const UsersTable = () => {
                     </div>
                   </label>
                 </div>
+                {addStudentFormErrors.avatarFile && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {addStudentFormErrors.avatarFile}
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end">
