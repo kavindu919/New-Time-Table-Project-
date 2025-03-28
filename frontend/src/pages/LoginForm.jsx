@@ -32,6 +32,12 @@ const LoginForm = () => {
       });
 
       const data = await response.json();
+      if (data.user) {
+        localStorage.setItem(
+          "userId",
+          JSON.stringify({ userId: data.user.id })
+        );
+      }
 
       if (!response.ok) {
         throw new Error(data.message || "Invalid credentials");

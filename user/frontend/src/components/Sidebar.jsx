@@ -4,13 +4,48 @@ import { FaTachometerAlt, FaUsers } from "react-icons/fa";
 import { GrHistory } from "react-icons/gr";
 import { IoNotificationsSharp } from "react-icons/io5";
 import { BiMessageRoundedDetail } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const navigate = useNavigate();
   // Toggle dropdown visibility
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
+  };
+  const handleLogout = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("userId"));
+      const userId = userData.userId;
+
+      if (!userId) {
+        console.error("No user ID found in localStorage");
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/api/user/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: userId }),
+      });
+
+      if (response.ok) {
+        // Clear user data from localStorage
+
+        localStorage.removeItem("userId"); // Remove by the correct key name
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        // Redirect to login page
+        navigate("/login");
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
   return (
@@ -53,6 +88,15 @@ const Sidebar = () => {
               <GrHistory className="mr-3 text-xl" />
               <span className="text-lg">Request History</span>
             </Link>
+          </li>
+          <li className="hover:bg-indigo-600 transition-all duration-300 ease-in-out rounded-md mx-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center p-3 w-full text-left hover:text-white"
+            >
+              <RiLogoutBoxRLine className="mr-3 text-xl" />
+              <span className="text-lg">Logout</span>
+            </button>
           </li>
         </ul>
       </nav>

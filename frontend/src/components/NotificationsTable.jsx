@@ -14,6 +14,11 @@ const NotificationsTable = () => {
     message: "",
     recipientType: "all",
   });
+  const [errors, setErrors] = useState({
+    title: "",
+    message: "",
+    recipientType: "",
+  });
 
   const navigate = useNavigate();
   const fetchNotifications = async () => {
@@ -62,7 +67,43 @@ const NotificationsTable = () => {
     }));
   };
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      title: "",
+      message: "",
+      recipientType: "",
+    };
+
+    if (!newNotification.title.trim()) {
+      newErrors.title = "Title is required";
+      isValid = false;
+    } else if (newNotification.title.length > 100) {
+      newErrors.title = "Title must be less than 100 characters";
+      isValid = false;
+    }
+
+    if (!newNotification.message.trim()) {
+      newErrors.message = "Message is required";
+      isValid = false;
+    } else if (newNotification.message.length > 500) {
+      newErrors.message = "Message must be less than 500 characters";
+      isValid = false;
+    }
+
+    if (!newNotification.recipientType) {
+      newErrors.recipientType = "Recipient type is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const confirmAddNotification = async () => {
+    if (!validateForm()) {
+      return;
+    }
     try {
       const response = await fetch(
         "http://localhost:8080/api/admin/addnotification",
@@ -141,7 +182,7 @@ const NotificationsTable = () => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-xl overflow-x-auto">
+    <div className="p-6 bg-white shadow-md rounded-xl overflow-x-auto h-screen">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold text-gray-800">Notifications</h2>
         <button
@@ -211,44 +252,61 @@ const NotificationsTable = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
+                  Title *
                 </label>
                 <input
                   type="text"
                   name="title"
                   value={newNotification.title}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className={`w-full px-3 py-2 border rounded ${
+                    errors.title ? "border-red-500" : ""
+                  }`}
                   required
                 />
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
+                  Message *
                 </label>
                 <textarea
                   name="message"
                   value={newNotification.message}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className={`w-full px-3 py-2 border rounded ${
+                    errors.message ? "border-red-500" : ""
+                  }`}
                   rows="3"
                   required
                 />
+                {errors.message && (
+                  <p className="mt-1 text-sm text-red-500">{errors.message}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Recipient Type
+                  Recipient Type *
                 </label>
                 <select
                   name="recipientType"
                   value={newNotification.recipientType}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className={`w-full px-3 py-2 border rounded ${
+                    errors.recipientType ? "border-red-500" : ""
+                  }`}
                 >
                   <option value="all">All</option>
                   <option value="student">Students</option>
                   <option value="teacher">Teachers</option>
                 </select>
+                {errors.recipientType && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.recipientType}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex justify-end mt-6">

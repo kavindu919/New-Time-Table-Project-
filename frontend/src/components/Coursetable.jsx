@@ -15,6 +15,11 @@ const CoursesTable = () => {
     description: "",
     teacherIds: [],
   });
+  const [errors, setErrors] = useState({
+    name: "",
+    description: "",
+    teacherIds: "",
+  });
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -97,7 +102,40 @@ const CoursesTable = () => {
     }));
   };
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      name: "",
+      description: "",
+      teacherIds: "",
+    };
+
+    if (!newCourse.name.trim()) {
+      newErrors.name = "Course name is required";
+      isValid = false;
+    } else if (newCourse.name.length > 100) {
+      newErrors.name = "Course name must be less than 100 characters";
+      isValid = false;
+    }
+
+    if (newCourse.description.length > 500) {
+      newErrors.description = "Description must be less than 500 characters";
+      isValid = false;
+    }
+
+    if (newCourse.teacherIds.length === 0) {
+      newErrors.teacherIds = "At least one teacher must be selected";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const confirmAddCourse = async () => {
+    if (!validateForm()) {
+      return;
+    }
     try {
       const response = await fetch(
         "http://localhost:8080/api/admin/addcourse",
@@ -231,16 +269,21 @@ const CoursesTable = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Course Name
+                  Course Name *
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={newCourse.name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className={`w-full px-3 py-2 border rounded ${
+                    errors.name ? "border-red-500" : ""
+                  }`}
                   required
                 />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -250,15 +293,26 @@ const CoursesTable = () => {
                   name="description"
                   value={newCourse.description}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded"
+                  className={`w-full px-3 py-2 border rounded ${
+                    errors.description ? "border-red-500" : ""
+                  }`}
                   rows="3"
                 />
+                {errors.description && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.description}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assign Teachers
+                  Assign Teachers *
                 </label>
-                <div className="max-h-40 overflow-y-auto border rounded p-2">
+                <div
+                  className={`max-h-40 overflow-y-auto border rounded p-2 ${
+                    errors.teacherIds ? "border-red-500" : ""
+                  }`}
+                >
                   {teachers.length > 0 ? (
                     teachers.map((teacher) => (
                       <div key={teacher.id} className="flex items-center mb-2">
@@ -278,6 +332,11 @@ const CoursesTable = () => {
                     <p className="text-gray-500">No teachers available</p>
                   )}
                 </div>
+                {errors.teacherIds && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.teacherIds}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex justify-end mt-6">
