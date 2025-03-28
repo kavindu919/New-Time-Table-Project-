@@ -73,7 +73,12 @@ router.get("/getallusers", verifyToken(["admin"]), getAllStudents);
 router.get("/getuser/:id", verifyToken(["admin"]), getSingleStudents);
 
 //Route For Teacher Authentication and Teacher Management
-router.post("/addteacher", verifyToken(["admin"]), registerTeacher);
+router.post(
+  "/addteacher",
+  verifyToken(["admin"]),
+  upload.single("avatar"),
+  registerTeacher
+);
 router.post("/updateteacher", verifyToken(["admin"]), updateTeacher);
 router.post("/deleteteacher", verifyToken(["admin"]), deleteTeacher);
 router.post("/verifyteacher", verifyToken(["admin"]), setTeacherState);
