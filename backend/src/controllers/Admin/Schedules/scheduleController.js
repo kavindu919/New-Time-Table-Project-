@@ -1,5 +1,6 @@
 import prisma from "../../../../lib/prismaclient.js";
 import { createNotification } from "../../../helper/createNotificationHelper.js";
+import PDFDocument from "pdfkit";
 
 export const addSchedule = async (req, res) => {
   const {
@@ -199,8 +200,30 @@ export const updateSchedule = async (req, res) => {
   }
 };
 
+// export const getAllSchedules = async (req, res) => {
+//   try {
+//     const schedules = await prisma.schedules.findMany({
+//       include: {
+//         course: {
+//           select: {
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+//     if (!schedules.length) {
+//       return res.status(404).json({ message: "No schedules found" });
+//     }
+//     return res.status(200).json({ data: schedules });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 export const getAllSchedules = async (req, res) => {
   try {
+    const { download } = req.query;
+
     const schedules = await prisma.schedules.findMany({
       include: {
         course: {
@@ -210,13 +233,130 @@ export const getAllSchedules = async (req, res) => {
         },
       },
     });
+
     if (!schedules.length) {
       return res.status(404).json({ message: "No schedules found" });
     }
+
+    // Handle PDF download
+    if (download === "pdf") {
+      try {
+        const doc = new PDFDocument({ margin: 30 });
+
+        // Set response headers
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=schedules.pdf"
+        );
+
+        // Pipe the PDF to the response
+        doc.pipe(res);
+
+        // Add title
+        doc.fontSize(20).text("Schedules Report", { align: "center" });
+        doc.moveDown();
+
+        // Add current date
+        doc
+          .fontSize(10)
+          .text(`Generated on: ${new Date().toLocaleDateString()}`, {
+            align: "right",
+          });
+        doc.moveDown(2);
+
+        // Add table headers
+        const headers = [
+          "Course",
+          "Date",
+          "Start Time",
+          "End Time",
+          "Venue",
+          "Duration",
+        ];
+        let y = doc.y;
+
+        // Draw table headers
+        doc.font("Helvetica-Bold");
+        doc.fontSize(12);
+        doc.text(headers[0], 50, y);
+        doc.text(headers[1], 150, y);
+        doc.text(headers[2], 230, y);
+        doc.text(headers[3], 300, y);
+        doc.text(headers[4], 370, y);
+        doc.text(headers[5], 470, y);
+        doc.moveDown();
+
+        // Draw table rows
+        doc.font("Helvetica");
+        schedules.forEach((schedule) => {
+          y = doc.y;
+          if (y > 700) {
+            // Add new page if we're at the bottom
+            doc.addPage();
+            y = 50;
+          }
+
+          // Convert dates to proper format
+          const scheduleDate = new Date(schedule.date);
+          const startTime = new Date(schedule.startTime);
+          const endTime = new Date(schedule.endTime);
+
+          doc.fontSize(10);
+          doc.text(schedule.course?.name || "N/A", 50, y);
+          doc.text(scheduleDate.toLocaleDateString(), 150, y);
+          doc.text(
+            startTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            230,
+            y
+          );
+          doc.text(
+            endTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            300,
+            y
+          );
+          doc.text(schedule.venue, 370, y);
+          doc.text(`${schedule.duration} mins`, 470, y);
+          doc.moveDown();
+
+          // Add description if exists
+          if (schedule.description) {
+            doc
+              .fontSize(8)
+              .text(`Description: ${schedule.description}`, 50, doc.y, {
+                width: 500,
+                align: "left",
+              });
+            doc.moveDown();
+          }
+        });
+
+        // Finalize the PDF
+        doc.end();
+        return;
+      } catch (pdfError) {
+        console.error("PDF generation error:", pdfError);
+        // Make sure we don't try to send multiple responses
+        if (!res.headersSent) {
+          return res.status(500).json({ message: "Failed to generate PDF" });
+        }
+      }
+    }
+
+    // Return JSON response if not downloading PDF
     return res.status(200).json({ data: schedules });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    // Make sure we don't try to send multiple responses
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 };
 
