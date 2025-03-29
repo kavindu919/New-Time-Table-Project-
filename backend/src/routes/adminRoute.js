@@ -17,9 +17,11 @@ import {
 } from "../controllers/Admin/teacher/teacherAuthController.js";
 import {
   addSchedule,
+  cancelAndReassignSchedule,
   deleteSchedule,
   getAllSchedules,
   getSingleSchedule,
+  getTeacherSchedules,
   reassignSchedule,
   updateSchedule,
 } from "../controllers/Admin/Schedules/scheduleController.js";
@@ -86,6 +88,16 @@ router.post("/verifyteacher", verifyToken(["admin"]), setTeacherState);
 
 router.get("/getallteachers", verifyToken(["admin"]), getAllTeachers);
 router.get("/getteacher/:id", verifyToken(["admin"]), getSingleTeacher);
+router.get(
+  "/getteacherschedule/:id",
+  verifyToken(["teacher"]),
+  getTeacherSchedules
+);
+router.post(
+  "/reasignteacher",
+  verifyToken(["teacher"]),
+  cancelAndReassignSchedule
+);
 
 //Route For Schedule Authentication and Schedule Management
 router.post("/addschedule", verifyToken(["admin"]), addSchedule);
