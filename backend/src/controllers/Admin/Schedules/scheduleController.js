@@ -594,21 +594,109 @@ export const getTeacherSchedules = async (req, res) => {
   }
 };
 
+// export const cancelAndReassignSchedule = async (req, res) => {
+//   const { scheduleId } = req.body;
+
+//   try {
+//     const schedule = await prisma.schedules.findUnique({
+//       where: { id: scheduleId },
+//       include: {
+//         course: true,
+//         teacher: true,
+//       },
+//     });
+
+//     if (!schedule) {
+//       return res.status(404).json({ message: "Schedule not found" });
+//     }
+
+//     const currentTeacherId = schedule.teacherId;
+//     const subjectIds = await prisma.courseTeacher.findMany({
+//       where: { teacherId: currentTeacherId },
+//       select: { courseId: true },
+//     });
+
+//     const subjectIdList = subjectIds.map((c) => c.courseId);
+
+//     const availableTeacher = await prisma.user.findFirst({
+//       where: {
+//         role: "teacher",
+//         id: { not: currentTeacherId },
+//         CourseTeacher: { some: { courseId: { in: subjectIdList } } },
+//         assignedSchedules: {
+//           none: {
+//             schedule: {
+//               date: schedule.date,
+//               AND: [
+//                 { startTime: { lt: schedule.endTime } },
+//                 { endTime: { gt: schedule.startTime } },
+//               ],
+//             },
+//           },
+//         },
+//       },
+//     });
+
+//     if (availableTeacher) {
+//       await prisma.schedules.update({
+//         where: { id: scheduleId },
+//         data: { teacherId: availableTeacher.id },
+//       });
+
+//       await prisma.assignedSchedule.updateMany({
+//         where: { scheduleId: scheduleId },
+//         data: { userId: availableTeacher.id },
+//       });
+
+//       const recipientType = "all";
+//       await createNotification(
+//         `Schedule Updated: ${schedule.courseName}`,
+//         `New Teacher: ${availableTeacher.firstName} ${availableTeacher.lastName}\n
+//          Date: ${schedule.date} | Time: ${schedule.startTime} - ${schedule.endTime} | Venue: ${schedule.venue}`,
+//         recipientType
+//       );
+
+//       return res.status(200).json({
+//         message: "Schedule reassigned successfully",
+//         newTeacher: {
+//           id: availableTeacher.id,
+//           name: `${availableTeacher.firstName} ${availableTeacher.lastName}`,
+//         },
+//         action: "reassigned",
+//       });
+//     } else {
+//       await prisma.assignedSchedule.deleteMany({
+//         where: { scheduleId: scheduleId },
+//       });
+
+//       await prisma.schedules.delete({
+//         where: { id: scheduleId },
+//       });
+
+//       return res.status(200).json({
+//         message: "No available teacher found - schedule deleted",
+//         action: "deleted",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error in cancelAndReassignSchedule:", error);
+//     return res.status(500).json({
+//       message: "Internal Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 export const cancelAndReassignSchedule = async (req, res) => {
-  const { scheduleId } = req.body; // Changed from req.body to req.params for consistency
+  const { scheduleId } = req.body;
 
   try {
-    // First delete all assigned examiners for this schedule
-    await prisma.assignedSchedule.deleteMany({
-      where: { scheduleId: scheduleId },
-    });
-
-    // Then proceed with finding and updating the schedule
     const schedule = await prisma.schedules.findUnique({
       where: { id: scheduleId },
       include: {
         course: true,
         teacher: true,
+        assignedExaminers: true,
       },
     });
 
@@ -617,42 +705,25 @@ export const cancelAndReassignSchedule = async (req, res) => {
     }
 
     const currentTeacherId = schedule.teacherId;
-
-    // Find other teachers who teach this course
-    const courseTeachers = await prisma.courseTeacher.findMany({
-      where: { courseId: schedule.courseId },
-      select: { teacherId: true },
+    const subjectIds = await prisma.courseTeacher.findMany({
+      where: { teacherId: currentTeacherId },
+      select: { courseId: true },
     });
 
-    const teacherIds = courseTeachers
-      .map((ct) => ct.teacherId)
-      .filter((id) => id !== currentTeacherId);
+    const subjectIdList = subjectIds.map((c) => c.courseId);
 
-    if (teacherIds.length === 0) {
-      // No alternatives - delete the schedule (now safe since examiners are deleted)
-      await prisma.schedules.delete({
-        where: { id: scheduleId },
-      });
-      return res.status(200).json({
-        message: "No alternative teachers available - schedule deleted",
-        action: "deleted",
-      });
-    }
-
-    // Find available teacher
     const availableTeacher = await prisma.user.findFirst({
       where: {
-        id: { in: teacherIds },
         role: "teacher",
+        id: { not: currentTeacherId },
+        CourseTeacher: { some: { courseId: { in: subjectIdList } } },
         assignedSchedules: {
           none: {
             schedule: {
               date: schedule.date,
-              OR: [
-                {
-                  startTime: { lt: schedule.endTime },
-                  endTime: { gt: schedule.startTime },
-                },
+              AND: [
+                { startTime: { lt: schedule.endTime } },
+                { endTime: { gt: schedule.startTime } },
               ],
             },
           },
@@ -661,29 +732,29 @@ export const cancelAndReassignSchedule = async (req, res) => {
     });
 
     if (availableTeacher) {
-      // Reassign the schedule to new teacher
       await prisma.schedules.update({
         where: { id: scheduleId },
-        data: {
-          teacherId: availableTeacher.id,
-        },
+        data: { teacherId: availableTeacher.id },
       });
 
-      // Recreate assigned examiners if needed
-      // (Add your logic here if you need to reassign examiners)
-
-      await createNotification(
-        `New Schedule Assigned: ${schedule.course.name}`,
-        `You have been assigned to teach ${schedule.course.name} on ${new Date(
-          schedule.date
-        ).toLocaleDateString()} from ${new Date(
-          schedule.startTime
-        ).toLocaleTimeString()} to ${new Date(
-          schedule.endTime
-        ).toLocaleTimeString()} at ${schedule.venue}`,
-        "teacher",
-        availableTeacher.id
-      );
+      if (schedule.assignedExaminers.length > 0) {
+        await prisma.assignedSchedule.updateMany({
+          where: { scheduleId: scheduleId },
+          data: { userId: availableTeacher.id },
+        });
+      }
+      await prisma.notification.create({
+        data: {
+          title: `Schedule Updated: ${schedule.course.name}`,
+          message: `New Teacher: ${availableTeacher.firstName} ${
+            availableTeacher.lastName
+          }\n
+                   Date: ${schedule.date.toLocaleDateString()} | Time: ${schedule.startTime.toLocaleTimeString()} - ${schedule.endTime.toLocaleTimeString()} | Venue: ${
+            schedule.venue
+          }`,
+          recipientType: "all",
+        },
+      });
 
       return res.status(200).json({
         message: "Schedule reassigned successfully",
@@ -694,12 +765,18 @@ export const cancelAndReassignSchedule = async (req, res) => {
         action: "reassigned",
       });
     } else {
-      // No available teachers - delete the schedule
+      if (schedule.assignedExaminers.length > 0) {
+        await prisma.assignedSchedule.deleteMany({
+          where: { scheduleId: scheduleId },
+        });
+      }
+
       await prisma.schedules.delete({
         where: { id: scheduleId },
       });
+
       return res.status(200).json({
-        message: "No teachers available at this time - schedule deleted",
+        message: "No available teacher found - schedule deleted",
         action: "deleted",
       });
     }
