@@ -10,6 +10,14 @@ const UsersTable = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [verifyUserModal, setVerifyUserModal] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filters, setFilters] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    status: "",
+    contactNumber: "",
+  });
   const [editFormData, setEditFormData] = useState({
     firstName: "",
     lastName: "",
@@ -40,32 +48,143 @@ const UsersTable = () => {
     navigate(`/userprofile/${userId}`); // Navigate to the user profile page
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:8080/api/admin/getallusers",
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
-        if (response.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
-        setUsers(data.users);
-        toast.success(data.message);
-      } catch (error) {
-        setError(error.message);
-        toast.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "http://localhost:8080/api/admin/getallusers",
+  //         {
+  //           credentials: "include",
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       if (response.status === 401) {
+  //         window.location.href = "/login";
+  //         return;
+  //       }
+  //       setUsers(data.users);
+  //       toast.success(data.message);
+  //     } catch (error) {
+  //       setError(error.message);
+  //       toast.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
+  //   fetchUsers();
+  // }, []);
+
+  const fetchUsers = async (filterParams = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(filterParams)) {
+        if (value) query.append(key, value);
+      }
+
+      const response = await fetch(
+        `http://localhost:8080/api/admin/getallusers?${query.toString()}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      setUsers(data.users || []);
+      setFilteredUsers(data.users || []);
+
+      if (data.users && data.users.length === 0) {
+        toast.info("No users found matching your criteria");
+      }
+    } catch (error) {
+      setError(error.message);
+      toast.error(error.message || "Error fetching users");
+      // On error, reset to show all users
+      fetchUsers(); // Fetch all users without filters
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
+
+  const applyFilters = () => {
+    const hasFilters = Object.values(filters).some((val) => val !== "");
+
+    if (hasFilters) {
+      fetchUsers(filters);
+    } else {
+      fetchUsers();
+    }
+  };
+
+  // Reset filters function
+  const resetFilters = () => {
+    setFilters({
+      firstName: "",
+      lastName: "",
+      email: "",
+      status: "",
+      contactNumber: "",
+    });
+    fetchUsers();
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // PDF Download function
+  const handleDownloadPdf = async () => {
+    try {
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(filters)) {
+        if (value) query.append(key, value);
+      }
+
+      const response = await fetch(
+        `http://localhost:8080/api/admin/getallusers?${query.toString()}&download=pdf`,
+        { credentials: "include" }
+      );
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Create temporary link to trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "users.pdf";
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (err) {
+      toast.error(`Failed to download PDF: ${err.message}`);
+    }
+  };
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -382,15 +501,121 @@ const UsersTable = () => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
   console.log(users);
   return (
-    <div className="p-6 bg-white shadow-md rounded-xl overflow-x-auto">
+    <div className="p-6 bg-white shadow-md rounded-xl overflow-x-auto h-180">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold text-gray-800">Users List</h2>
-        <button
-          onClick={() => setShowAddStudentModal(true)}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
-        >
-          Add Student
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleDownloadPdf}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+          >
+            Download PDF
+          </button>
+          <button
+            onClick={() => setShowAddStudentModal(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+          >
+            Add Student
+          </button>
+        </div>
+      </div>
+      {/* Filter Section */}
+      <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* First Name Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              First Name
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              value={filters.firstName}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border rounded"
+              placeholder="Search by first name"
+            />
+          </div>
+
+          {/* Last Name Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              value={filters.lastName}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border rounded"
+              placeholder="Search by last name"
+            />
+          </div>
+
+          {/* Email Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="text"
+              name="email"
+              value={filters.email}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border rounded"
+              placeholder="Search by email"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Contact Number Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Number
+            </label>
+            <input
+              type="text"
+              name="contactNumber"
+              value={filters.contactNumber}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border rounded"
+              placeholder="Search by contact"
+            />
+          </div>
+
+          {/* Status Filter */}
+          {/* <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div> */}
+        </div>
+
+        <div className="flex space-x-2">
+          <button
+            onClick={applyFilters}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            Apply Filters
+          </button>
+          <button
+            onClick={resetFilters}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+          >
+            Reset Filters
+          </button>
+        </div>
       </div>
       <table className="w-full text-left border-collapse">
         <thead>
@@ -405,7 +630,7 @@ const UsersTable = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <tr
               key={user.id}
               className="border-b hover:bg-gray-50 transition cursor-pointer"
