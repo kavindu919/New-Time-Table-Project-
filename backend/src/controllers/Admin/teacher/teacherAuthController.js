@@ -191,7 +191,7 @@ export const getAllTeachers = async (req, res) => {
     });
 
     if (!teachers.length) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "No teachers found matching your criteria",
       });
     }
