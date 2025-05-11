@@ -169,6 +169,7 @@ const ScheduleTable = () => {
         schedules.filter((schedule) => schedule.id !== selectedScheduleId)
       );
       toast.success(data.message || "Schedule deleted successfully");
+      fetchSchedules();
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     } finally {
